@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.khajiitos.betterclocks.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "ItemStackMixin",
+    "InGameHudMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
