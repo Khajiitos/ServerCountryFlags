@@ -1,3 +1,3 @@
-# Better Clocks
+# Server Country Flags
 
-Fabric mod that shows the exact in-game time when viewing a clock.
+Adds a flag to servers in the server list which tells where the server is located.

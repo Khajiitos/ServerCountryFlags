@@ -1,24 +1,25 @@
 {
   "schemaVersion": 1,
-  "id": "betterclocks",
+  "id": "servercountryflags",
   "version": "${version}",
-  "name": "Better clocks",
-  "description": "Shows the exact in-game time when viewing a clock.",
+  "name": "Server Country Flags",
+  "description": "Shows the flag of where a server is located.",
   "authors": ["Khajiitos"],
   "license": "CC0-1.0",
-  "icon": "assets/betterclocks/icon.png",
+  "icon": "assets/servercountryflags/icon.png",
   "environment": "client",
   "entrypoints": {
-    "main": [
-      "me.khajiitos.betterclocks.BetterClocks"
+    "client": [
+      "me.khajiitos.servercountryflags.ServerCountryFlags"
     ]
   },
   "mixins": [
-    "betterclocks.mixins.json"
+    "servercountryflags.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.14.0",
-    "minecraft": ">=1.19",
-    "java": ">=17"
+    "fabric-api-base": "",
+    "minecraft": ">=1.14.4",
+    "java": ">=8"
   }
 }
