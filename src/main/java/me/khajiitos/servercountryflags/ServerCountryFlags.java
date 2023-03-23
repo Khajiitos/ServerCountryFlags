@@ -32,7 +32,6 @@ public class ServerCountryFlags implements ClientModInitializer {
 			ResourceManager manager = MinecraftClient.getInstance().getResourceManager();
 			Collection<Identifier> resourceLocations = manager.findResources("textures/flags", path -> true);
 
-			System.out.println("Initializing flags");
 			for (Identifier identifier : resourceLocations) {
 				if (!identifier.getNamespace().equals("servercountryflags"))
 					continue;
@@ -41,7 +40,6 @@ public class ServerCountryFlags implements ClientModInitializer {
 					String code = last(identifier.getPath().split("/"));
 					code = code.substring(0, code.length() - 4);
 					flagAspectRatios.put(code, (float)image.getWidth() / (float)image.getHeight());
-					LOGGER.info(code);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
