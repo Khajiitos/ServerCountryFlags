@@ -46,13 +46,13 @@ public class ServerEntryMixin {
                 toolTip = locationInfo.cityName + ", " + locationInfo.countryName;
                 countryCode = locationInfo.countryCode;
             } else {
-                ServerCountryFlags.LOGGER.severe("Somehow a server has a failed ServerLocationInfo associated to it?");
+                ServerCountryFlags.LOGGER.error("Somehow a server has a failed ServerLocationInfo associated to it?");
             }
         }
 
         if (!ServerCountryFlags.flagAspectRatios.containsKey(countryCode)) {
             if (!printedError) {
-                ServerCountryFlags.LOGGER.severe("ERROR: Unsupported country code: " + countryCode);
+                ServerCountryFlags.LOGGER.error("ERROR: Unsupported country code: " + countryCode);
                 printedError = true;
             }
             countryCode = "unknown";
@@ -63,15 +63,13 @@ public class ServerEntryMixin {
         int height = 12;
         int width = (int)(ServerCountryFlags.flagAspectRatios.get(countryCode) * height);
 
-        MinecraftClient.getInstance().getTextureManager().bindTexture(textureId);
+        RenderSystem.setShaderTexture(0, textureId);
         RenderSystem.enableBlend();
-            DrawableHelper.drawTexture(matrices, x + entryWidth - width - 6, y + entryHeight - height - 4, 0.0F, 0.0F, width, height, width, height);
+        DrawableHelper.drawTexture(matrices, x + entryWidth - width - 6, y + entryHeight - height - 4, 0.0F, 0.0F, width, height, width, height);
         RenderSystem.disableBlend();
 
         if (mouseX >= x + entryWidth - width - 6 && mouseX <= x + entryWidth - 6 && mouseY >= y + entryHeight - height - 4 && mouseY <= y + entryHeight - 4) {
-            List<Text> list = new ArrayList<>();
-            list.add(Text.of(toolTip));
-            screen.setTooltip(list);
+            screen.setMultiplayerScreenTooltip(List.of(Text.literal(toolTip)));
         }
     }
 }

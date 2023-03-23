@@ -11,13 +11,13 @@ public class ServerLocationInfo {
         if (apiObject.has("status")) {
             success = apiObject.get("status").getAsString().equals("success");
             if (!success) {
-                ServerCountryFlags.LOGGER.severe("API result isn't successful");
-                ServerCountryFlags.LOGGER.severe(apiObject.toString());
+                ServerCountryFlags.LOGGER.error("API result isn't successful");
+                ServerCountryFlags.LOGGER.error(apiObject.toString());
                 return;
             }
         } else {
-            ServerCountryFlags.LOGGER.severe("API Object doesn't include the field 'status'");
-            ServerCountryFlags.LOGGER.severe(apiObject.toString());
+            ServerCountryFlags.LOGGER.error("API Object doesn't include the field 'status'");
+            ServerCountryFlags.LOGGER.error(apiObject.toString());
             return;
         }
         if (apiObject.has("country") && apiObject.has("countryCode") && apiObject.has("city")) {
@@ -25,8 +25,8 @@ public class ServerLocationInfo {
             this.countryCode = apiObject.get("countryCode").getAsString().toLowerCase();
             this.cityName = apiObject.get("city").getAsString();
         } else {
-            ServerCountryFlags.LOGGER.severe("API Object is incomplete");
-            ServerCountryFlags.LOGGER.severe(apiObject.toString());
+            ServerCountryFlags.LOGGER.error("API Object is incomplete");
+            ServerCountryFlags.LOGGER.error(apiObject.toString());
             success = false;
         }
     }
