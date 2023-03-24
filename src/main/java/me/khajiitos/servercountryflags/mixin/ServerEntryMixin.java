@@ -66,6 +66,7 @@ public class ServerEntryMixin {
         RenderSystem.setShaderTexture(0, textureId);
         RenderSystem.enableBlend();
         DrawableHelper.drawTexture(matrices, x + entryWidth - width - 6, y + entryHeight - height - 4, 0.0F, 0.0F, width, height, width, height);
+        DrawableHelper.drawBorder(matrices, x + entryWidth - width - 6, y + entryHeight - height - 4, width, height, 0xFF444444);
         RenderSystem.disableBlend();
 
         if (mouseX >= x + entryWidth - width - 6 && mouseX <= x + entryWidth - 6 && mouseY >= y + entryHeight - height - 4 && mouseY <= y + entryHeight - 4) {

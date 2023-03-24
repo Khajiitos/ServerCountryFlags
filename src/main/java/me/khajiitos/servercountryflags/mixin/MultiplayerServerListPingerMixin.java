@@ -27,7 +27,13 @@ import java.util.Optional;
 public class MultiplayerServerListPingerMixin {
     @Inject(method = "add", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
     public void afterAdd(final ServerInfo entry, final Runnable saver, final CallbackInfo info, final ServerAddress sa, Optional o, InetSocketAddress inetSocketAddress) {
-        String ip = inetSocketAddress.getHostName();
+        String ip = inetSocketAddress.getAddress().getHostAddress();
+
+        // If the IP is local, make the API give us our location
+        if (ip.equals("127.0.0.1") || ip.startsWith("192.168")) {
+            ip = "";
+        }
+
         String apiUrlStr = ServerCountryFlags.API_NAME + ip + "?fields=" + ServerCountryFlags.API_FIELDS;
         try {
             URL apiUrl = new URL(apiUrlStr);
@@ -40,7 +46,6 @@ public class MultiplayerServerListPingerMixin {
                 return;
             }
             ServerLocationInfo serverLocationInfo = new ServerLocationInfo((JsonObject) jsonElement);
-
             if (serverLocationInfo.success) {
                 ServerCountryFlags.servers.put(entry.address, serverLocationInfo);
             } else {
