@@ -3,11 +3,12 @@ package me.khajiitos.servercountryflags.mixin;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import me.khajiitos.servercountryflags.Config;
 import me.khajiitos.servercountryflags.ServerCountryFlags;
 import me.khajiitos.servercountryflags.ServerLocationInfo;
 import net.minecraft.client.network.MultiplayerServerListPinger;
-import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.network.ServerAddress;
+import net.minecraft.client.network.ServerInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -25,6 +26,14 @@ import java.util.Optional;
 
 @Mixin(MultiplayerServerListPinger.class)
 public class MultiplayerServerListPingerMixin {
+
+    @Inject(method = "<init>", at = @At("TAIL"))
+    public void constructor(CallbackInfo info) {
+        if (Config.reloadOnRefresh) {
+            ServerCountryFlags.servers.clear();
+        }
+    }
+
     @Inject(method = "add", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
     public void afterAdd(final ServerInfo entry, final Runnable saver, final CallbackInfo info, final ServerAddress sa, Optional o, InetSocketAddress inetSocketAddress) {
         String ip = inetSocketAddress.getAddress().getHostAddress();
@@ -53,8 +62,10 @@ public class MultiplayerServerListPingerMixin {
             }
         } catch (MalformedURLException e) {
             ServerCountryFlags.LOGGER.error("Malformed API Url: " + apiUrlStr);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             ServerCountryFlags.LOGGER.error("Some other exception: " + apiUrlStr);
+            ServerCountryFlags.LOGGER.error(e.getMessage());
         }
     }
 }

@@ -1,14 +1,13 @@
 package me.khajiitos.servercountryflags.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import me.khajiitos.servercountryflags.Config;
 import me.khajiitos.servercountryflags.ServerCountryFlags;
 import me.khajiitos.servercountryflags.ServerLocationInfo;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.texture.TextureManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -19,7 +18,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(MultiplayerServerListWidget.ServerEntry.class)
@@ -66,7 +64,9 @@ public class ServerEntryMixin {
         RenderSystem.setShaderTexture(0, textureId);
         RenderSystem.enableBlend();
         DrawableHelper.drawTexture(matrices, x + entryWidth - width - 6, y + entryHeight - height - 4, 0.0F, 0.0F, width, height, width, height);
-        DrawableHelper.drawBorder(matrices, x + entryWidth - width - 6, y + entryHeight - height - 4, width, height, 0xFF444444);
+        if (Config.flagBorder) {
+            DrawableHelper.drawBorder(matrices, x + entryWidth - width - 7, y + entryHeight - height - 5, width + 2, height + 2, 0xFF444444);
+        }
         RenderSystem.disableBlend();
 
         if (mouseX >= x + entryWidth - width - 6 && mouseX <= x + entryWidth - 6 && mouseY >= y + entryHeight - height - 4 && mouseY <= y + entryHeight - 4) {

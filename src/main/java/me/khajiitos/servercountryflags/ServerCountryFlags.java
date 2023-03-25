@@ -10,13 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ServerCountryFlags implements ClientModInitializer {
-
-	public static final Logger LOGGER = LoggerFactory.getLogger("servercountryflags");
+	public static final String MOD_ID = "servercountryflags";
+	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static final String API_NAME = "http://ip-api.com/json/";
 	public static int API_FIELDS = 16403;
 
@@ -31,12 +30,13 @@ public class ServerCountryFlags implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		Config.init();
 		MinecraftClient.getInstance().execute(() -> {
 			ResourceManager manager = MinecraftClient.getInstance().getResourceManager();
 			Map<Identifier, Resource> resourceLocations = manager.findResources("textures/flags", path -> true);
 
 			for (Map.Entry<Identifier, Resource> entry : resourceLocations.entrySet()) {
-				if (!entry.getKey().getNamespace().equals("servercountryflags"))
+				if (!entry.getKey().getNamespace().equals(MOD_ID))
 					continue;
 				try {
 					NativeImage image = NativeImage.read(entry.getValue().getInputStream());
