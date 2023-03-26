@@ -3,14 +3,24 @@ package me.khajiitos.servercountryflags;
 import net.minecraft.client.MinecraftClient;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.nio.file.*;
 import java.util.Properties;
 
 public class Config {
+    @ConfigEntry
     public static boolean flagBorder = true;
+
+    @ConfigEntry
     public static boolean reloadOnRefresh = false;
+
+    @ConfigEntry
     public static boolean showDistance = true;
+
+    @ConfigEntry
     public static boolean useKm = true;
+
+    @ConfigEntry
     public static boolean forceEnglish = false;
 
     private static File configDirectory;
@@ -28,8 +38,10 @@ public class Config {
 
     public static void load() {
         Properties properties = new Properties();
+        boolean loadedProperties = false;
         try {
             properties.load(new FileInputStream(propertiesFile));
+            loadedProperties = true;
         } catch (FileNotFoundException e) {
             ServerCountryFlags.LOGGER.info("Our properties file doesn't exist, creating it");
             try {
@@ -47,11 +59,33 @@ public class Config {
             ServerCountryFlags.LOGGER.error(e.getMessage());
         }
 
-        flagBorder = Boolean.parseBoolean(String.valueOf(properties.getOrDefault("flagBorder", String.valueOf(flagBorder))));
-        reloadOnRefresh = Boolean.parseBoolean(String.valueOf(properties.getOrDefault("reloadOnRefresh", String.valueOf(reloadOnRefresh))));
-        showDistance = Boolean.parseBoolean(String.valueOf(properties.getOrDefault("showDistance", String.valueOf(showDistance))));
-        useKm = Boolean.parseBoolean(String.valueOf(properties.getOrDefault("useKm", String.valueOf(useKm))));
-        forceEnglish = Boolean.parseBoolean(String.valueOf(properties.getOrDefault("forceEnglish", String.valueOf(forceEnglish))));
+        if (!loadedProperties)
+            return;
+
+        boolean rewriteConfig = false;
+        for (Field field : Config.class.getDeclaredFields()) {
+            ConfigEntry annotation = field.getAnnotation(ConfigEntry.class);
+            if (annotation != null) {
+                String propertiesValue = properties.getProperty(annotation.name().equals("") ? field.getName() : annotation.name());
+                if (propertiesValue == null) {
+                    rewriteConfig = true;
+                } else {
+                    try {
+                        // TODO: Support more types later on
+                        if (field.getType() ==  Boolean.class) {
+                            field.setBoolean(null, Boolean.parseBoolean(propertiesValue));
+                        }
+                    } catch (IllegalAccessException e) {
+                        ServerCountryFlags.LOGGER.warn("Bug: can't modify a config field");
+                    }
+                }
+            }
+        }
+
+        if (rewriteConfig) {
+            ServerCountryFlags.LOGGER.info("Properties file doesn't contain all fields available, rewriting it");
+            save();
+        }
 
         if (forceEnglish) {
             ServerCountryFlags.updateAPILanguage(null);
@@ -62,11 +96,18 @@ public class Config {
 
     public static void save() {
         Properties properties = new Properties();
-        properties.setProperty("flagBorder", String.valueOf(flagBorder));
-        properties.setProperty("reloadOnRefresh", String.valueOf(reloadOnRefresh));
-        properties.setProperty("showDistance", String.valueOf(showDistance));
-        properties.setProperty("useKm", String.valueOf(useKm));
-        properties.setProperty("forceEnglish", String.valueOf(forceEnglish));
+
+        for (Field field : Config.class.getDeclaredFields()) {
+            ConfigEntry annotation = field.getAnnotation(ConfigEntry.class);
+            if (annotation != null) {
+                try {
+                    properties.setProperty(annotation.name().equals("") ? field.getName() : annotation.name(), String.valueOf(field.get(null)));
+                } catch (IllegalAccessException e) {
+                    ServerCountryFlags.LOGGER.warn("Bug: can't access a config field");
+                }
+            }
+        }
+
         try {
             properties.store(new FileOutputStream(propertiesFile), "Mod properties file");
         } catch (FileNotFoundException e) {
