@@ -1,0 +1,6 @@
+{
+  "locationInfo.unknown": "(inconnu)",
+  "locationInfo.distance": "≈ %d %s de distance",
+  "locationInfo.km": "km",
+  "locationInfo.mi": "mi"
+}

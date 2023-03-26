@@ -1,5 +1,8 @@
 package me.khajiitos.servercountryflags;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.NativeImage;
@@ -9,19 +12,28 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class ServerCountryFlags implements ClientModInitializer {
 	public static final String MOD_ID = "servercountryflags";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static final String API_NAME = "http://ip-api.com/json/";
-	public static int API_FIELDS = 16403;
+	public static final int API_FIELDS = 16403;
+	public static final int API_FIELDS_LONLAT = 16595;
+	public static String apiLanguage = null;
 
-	public static HashMap<String, ServerLocationInfo> servers = new HashMap<>();
+	public static HashMap<String, LocationInfo> servers = new HashMap<>();
 	public static HashMap<String, Float> flagAspectRatios = new HashMap<>();
 
+	public static LocationInfo localLocation = null;
 
 	<T>
 	T last(T[] arr) {
@@ -32,6 +44,7 @@ public class ServerCountryFlags implements ClientModInitializer {
 	public void onInitializeClient() {
 		Config.init();
 		MinecraftClient.getInstance().execute(() -> {
+			updateAPILanguage(MinecraftClient.getInstance().getLanguageManager().getLanguage());
 			ResourceManager manager = MinecraftClient.getInstance().getResourceManager();
 			Map<Identifier, Resource> resourceLocations = manager.findResources("textures/flags", path -> true);
 
@@ -48,5 +61,62 @@ public class ServerCountryFlags implements ClientModInitializer {
 				}
 			}
 		});
+		LocationInfo local = getServerLocationInfo("", true);
+		if (local != null && local.success && local.hasLonlat()) {
+			ServerCountryFlags.localLocation = local;
+		}
+	}
+
+	public static void updateAPILanguage(String language) {
+		final String oldApiLanguage = apiLanguage;
+
+		if (Config.forceEnglish) {
+			apiLanguage = null;
+		} else if (language != null) {
+			if (language.startsWith("en")) apiLanguage = null;
+			else if (language.startsWith("de")) apiLanguage = "de";
+			else if (language.startsWith("es")) apiLanguage = "es";
+			else if (language.startsWith("pt")) apiLanguage = "pt-BR";
+			else if (language.startsWith("fr")) apiLanguage = "fr";
+			else if (language.startsWith("ja")) apiLanguage = "ja";
+			else if (language.startsWith("zn")) apiLanguage = "zn-CN";
+			else if (language.startsWith("ru")) apiLanguage = "ru";
+			else apiLanguage = null;
+		}
+
+		if (!Objects.equals(language, oldApiLanguage)) {
+			servers.clear();
+		}
+	}
+
+	public static LocationInfo getServerLocationInfo(String ip, boolean withLonlat) {
+		// If the IP is local, make the API give us our location
+		if (ip.equals("127.0.0.1") || ip.startsWith("192.168")) {
+			ip = "";
+		}
+
+		String apiUrlStr = API_NAME + ip + "?fields=" + (withLonlat ? API_FIELDS_LONLAT : API_FIELDS);
+		if (apiLanguage != null) {
+			apiUrlStr += "&lang=" + apiLanguage;
+		}
+		try {
+			URL apiUrl = new URL(apiUrlStr);
+			URLConnection con = apiUrl.openConnection();
+			con.setConnectTimeout(3000);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			JsonElement jsonElement = JsonParser.parseReader(reader);
+			if (jsonElement.isJsonObject()) {
+				return new LocationInfo((JsonObject) jsonElement);
+			} else {
+				ServerCountryFlags.LOGGER.error("Received JSON element, but it's not an object: " + jsonElement);
+			}
+		} catch (MalformedURLException e) {
+			ServerCountryFlags.LOGGER.error("Malformed API Url: " + apiUrlStr);
+		}
+		catch (IOException e) {
+			ServerCountryFlags.LOGGER.error("Some other exception: " + apiUrlStr);
+			ServerCountryFlags.LOGGER.error(e.getMessage());
+		}
+		return null;
 	}
 }

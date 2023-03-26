@@ -3,13 +3,14 @@ package me.khajiitos.servercountryflags.mixin;
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.khajiitos.servercountryflags.Config;
 import me.khajiitos.servercountryflags.ServerCountryFlags;
-import me.khajiitos.servercountryflags.ServerLocationInfo;
+import me.khajiitos.servercountryflags.LocationInfo;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(MultiplayerServerListWidget.ServerEntry.class)
@@ -35,16 +37,17 @@ public class ServerEntryMixin {
 
     @Inject(at = @At("TAIL"), method = "render")
     public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo info) {
-        String toolTip = "(unknown)";
+        String toolTip = null;
         String countryCode = "unknown";
+        LocationInfo locationInfo = ServerCountryFlags.servers.get(server.address);
 
-        if (ServerCountryFlags.servers.containsKey(server.address) && ServerCountryFlags.servers.get(server.address) != null) {
-            ServerLocationInfo locationInfo = ServerCountryFlags.servers.get(server.address);
+        if (locationInfo != null) {
             if (locationInfo.success) {
                 toolTip = locationInfo.cityName + ", " + locationInfo.countryName;
                 countryCode = locationInfo.countryCode;
             } else {
                 ServerCountryFlags.LOGGER.error("Somehow a server has a failed ServerLocationInfo associated to it?");
+                return;
             }
         }
 
@@ -70,7 +73,15 @@ public class ServerEntryMixin {
         RenderSystem.disableBlend();
 
         if (mouseX >= x + entryWidth - width - 6 && mouseX <= x + entryWidth - 6 && mouseY >= y + entryHeight - height - 4 && mouseY <= y + entryHeight - 4) {
-            screen.setMultiplayerScreenTooltip(List.of(Text.literal(toolTip)));
+            List<Text> toolTipList = new ArrayList<>();
+            toolTipList.add(toolTip != null ? Text.literal(toolTip) : Text.translatable("locationInfo.unknown"));
+            if (Config.showDistance && locationInfo != null && locationInfo.hasLonlat()) {
+                double distanceFromLocal = locationInfo.getDistanceFromLocal(Config.useKm);
+                if (distanceFromLocal != -1.0) {
+                    toolTipList.add(Text.translatable("locationInfo.distance", (int)distanceFromLocal, Text.translatable(Config.useKm ? "locationInfo.km" : "locationInfo.mi")).formatted(Formatting.ITALIC));
+                }
+            }
+            screen.setMultiplayerScreenTooltip(toolTipList);
         }
     }
 }

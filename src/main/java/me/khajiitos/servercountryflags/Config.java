@@ -9,6 +9,9 @@ import java.util.Properties;
 public class Config {
     public static boolean flagBorder = true;
     public static boolean reloadOnRefresh = false;
+    public static boolean showDistance = true;
+    public static boolean useKm = true;
+    public static boolean forceEnglish = false;
 
     private static File configDirectory;
     private static File propertiesFile;
@@ -46,12 +49,24 @@ public class Config {
 
         flagBorder = Boolean.parseBoolean(String.valueOf(properties.getOrDefault("flagBorder", String.valueOf(flagBorder))));
         reloadOnRefresh = Boolean.parseBoolean(String.valueOf(properties.getOrDefault("reloadOnRefresh", String.valueOf(reloadOnRefresh))));
+        showDistance = Boolean.parseBoolean(String.valueOf(properties.getOrDefault("showDistance", String.valueOf(showDistance))));
+        useKm = Boolean.parseBoolean(String.valueOf(properties.getOrDefault("useKm", String.valueOf(useKm))));
+        forceEnglish = Boolean.parseBoolean(String.valueOf(properties.getOrDefault("forceEnglish", String.valueOf(forceEnglish))));
+
+        if (forceEnglish) {
+            ServerCountryFlags.updateAPILanguage(null);
+        } else if (MinecraftClient.getInstance().getLanguageManager() != null) {
+            ServerCountryFlags.updateAPILanguage(MinecraftClient.getInstance().getLanguageManager().getLanguage());
+        }
     }
 
     public static void save() {
         Properties properties = new Properties();
         properties.setProperty("flagBorder", String.valueOf(flagBorder));
         properties.setProperty("reloadOnRefresh", String.valueOf(reloadOnRefresh));
+        properties.setProperty("showDistance", String.valueOf(showDistance));
+        properties.setProperty("useKm", String.valueOf(useKm));
+        properties.setProperty("forceEnglish", String.valueOf(forceEnglish));
         try {
             properties.store(new FileOutputStream(propertiesFile), "Mod properties file");
         } catch (FileNotFoundException e) {
