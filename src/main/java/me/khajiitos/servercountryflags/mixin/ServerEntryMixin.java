@@ -68,7 +68,8 @@ public class ServerEntryMixin {
         RenderSystem.enableBlend();
         DrawableHelper.drawTexture(matrices, x + entryWidth - width - 6, y + entryHeight - height - 4, 0.0F, 0.0F, width, height, width, height);
         if (Config.flagBorder) {
-            DrawableHelper.drawBorder(matrices, x + entryWidth - width - 7, y + entryHeight - height - 5, width + 2, height + 2, 0xFF444444);
+            final int color = (Config.borderR << 16) | (Config.borderG << 8) | Config.borderB | (Config.borderA << 24);
+            DrawableHelper.drawBorder(matrices, x + entryWidth - width - 7, y + entryHeight - height - 5, width + 2, height + 2, color);
         }
         RenderSystem.disableBlend();
 

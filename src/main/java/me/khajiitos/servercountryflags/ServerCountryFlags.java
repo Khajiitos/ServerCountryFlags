@@ -44,7 +44,6 @@ public class ServerCountryFlags implements ClientModInitializer {
 	public void onInitializeClient() {
 		Config.init();
 		MinecraftClient.getInstance().execute(() -> {
-			updateAPILanguage(MinecraftClient.getInstance().getLanguageManager().getLanguage());
 			ResourceManager manager = MinecraftClient.getInstance().getResourceManager();
 			Map<Identifier, Resource> resourceLocations = manager.findResources("textures/flags", path -> true);
 
@@ -84,7 +83,7 @@ public class ServerCountryFlags implements ClientModInitializer {
 			else apiLanguage = null;
 		}
 
-		if (!Objects.equals(language, oldApiLanguage)) {
+		if (!Objects.equals(apiLanguage, oldApiLanguage)) {
 			servers.clear();
 		}
 	}

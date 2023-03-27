@@ -12,6 +12,18 @@ public class Config {
     public static boolean flagBorder = true;
 
     @ConfigEntry
+    public static int borderR = 65;
+
+    @ConfigEntry
+    public static int borderG = 65;
+
+    @ConfigEntry
+    public static int borderB = 65;
+
+    @ConfigEntry
+    public static int borderA = 255;
+
+    @ConfigEntry
     public static boolean reloadOnRefresh = false;
 
     @ConfigEntry
@@ -71,12 +83,21 @@ public class Config {
                     rewriteConfig = true;
                 } else {
                     try {
-                        // TODO: Support more types later on
-                        if (field.getType() ==  Boolean.class) {
+                        if (field.getType() == String.class) {
+                            field.set(null, propertiesValue);
+                        } else if (field.getType() == boolean.class) {
                             field.setBoolean(null, Boolean.parseBoolean(propertiesValue));
+                        } else if (field.getType() == int.class) {
+                            field.setInt(null, Integer.parseInt(propertiesValue));
+                        } else if (field.getType() == float.class) {
+                            field.setFloat(null, Float.parseFloat(propertiesValue));
+                        } else {
+                            ServerCountryFlags.LOGGER.warn("Bug: unsupported config type " + field.getType().getSimpleName());
                         }
                     } catch (IllegalAccessException e) {
                         ServerCountryFlags.LOGGER.warn("Bug: can't modify a config field");
+                    } catch (NumberFormatException e) {
+                        ServerCountryFlags.LOGGER.warn("Field " + field.getName() + " in the properties type is not of type " + field.getType().getSimpleName());
                     }
                 }
             }
