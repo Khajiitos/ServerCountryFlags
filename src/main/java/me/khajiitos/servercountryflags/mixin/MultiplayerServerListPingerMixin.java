@@ -32,11 +32,11 @@ public class MultiplayerServerListPingerMixin {
         if (ServerCountryFlags.servers.containsKey(ip))
             return;
 
-        LocationInfo locationInfo = ServerCountryFlags.getServerLocationInfo(ip, Config.showDistance);
+        LocationInfo locationInfo = ServerCountryFlags.getServerLocationInfo(ip);
         if (locationInfo != null && locationInfo.success) {
             ServerCountryFlags.servers.put(entry.address, locationInfo);
         } else {
-            ServerCountryFlags.servers.put(entry.address, null);
+            ServerCountryFlags.servers.remove(entry.address);
         }
     }
 }

@@ -8,6 +8,11 @@
   "license": "CC0-1.0",
   "icon": "assets/servercountryflags/icon.png",
   "environment": "client",
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/server-country-flags",
+    "sources": "https://github.com/Khajiitos/ServerCountryFlags",
+    "issues": "https://github.com/Khajiitos/ServerCountryFlags/issues"
+  },
   "entrypoints": {
     "client": [
       "me.khajiitos.servercountryflags.ServerCountryFlags"

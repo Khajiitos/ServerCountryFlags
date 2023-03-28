@@ -8,32 +8,41 @@ import java.nio.file.*;
 import java.util.Properties;
 
 public class Config {
-    @ConfigEntry
+    @ConfigEntry(description = "Displays a border around flags")
     public static boolean flagBorder = true;
 
-    @ConfigEntry
+    @ConfigEntry(description = "Red channel value for the border color around flags")
     public static int borderR = 65;
 
-    @ConfigEntry
+    @ConfigEntry(description = "Green channel value for the border color around flags")
     public static int borderG = 65;
 
-    @ConfigEntry
+    @ConfigEntry(description = "Blue channel value for the border color around flags")
     public static int borderB = 65;
 
-    @ConfigEntry
+    @ConfigEntry(description = "Alpha channel value for the border color around flags")
     public static int borderA = 255;
 
-    @ConfigEntry
+    @ConfigEntry(description = "Forces flags to be reloaded when the server list is refreshed")
     public static boolean reloadOnRefresh = false;
 
-    @ConfigEntry
+    @ConfigEntry(description = "Shows the approximate distance between the server and you when you hover over a flag")
     public static boolean showDistance = true;
 
-    @ConfigEntry
+    @ConfigEntry(description = "Uses kilometers instead of miles")
     public static boolean useKm = true;
 
-    @ConfigEntry
+    @ConfigEntry(description = "Forces the API results to be in English instead of your in-game language")
     public static boolean forceEnglish = false;
+
+    @ConfigEntry(description = "Displays the unknown flag when we don't have data about the server yet")
+    public static boolean displayUnknownFlag = true;
+
+    @ConfigEntry(description = "Shows the district of the location too, if available")
+    public static boolean showDistrict = false;
+
+    @ConfigEntry(description = "Shows the ISP of the host, if available")
+    public static boolean showISP = false;
 
     private static File configDirectory;
     private static File propertiesFile;
@@ -118,11 +127,17 @@ public class Config {
     public static void save() {
         Properties properties = new Properties();
 
+        StringBuilder fieldsDescriptions = new StringBuilder();
+
         for (Field field : Config.class.getDeclaredFields()) {
             ConfigEntry annotation = field.getAnnotation(ConfigEntry.class);
             if (annotation != null) {
                 try {
-                    properties.setProperty(annotation.name().equals("") ? field.getName() : annotation.name(), String.valueOf(field.get(null)));
+                    String fieldName = annotation.name().equals("") ? field.getName() : annotation.name();
+                    if (!annotation.description().equals("")) {
+                        fieldsDescriptions.append("\n").append(fieldName).append(" - ").append(annotation.description());
+                    }
+                    properties.setProperty(fieldName, String.valueOf(field.get(null)));
                 } catch (IllegalAccessException e) {
                     ServerCountryFlags.LOGGER.warn("Bug: can't access a config field");
                 }
@@ -130,7 +145,11 @@ public class Config {
         }
 
         try {
-            properties.store(new FileOutputStream(propertiesFile), "Mod properties file");
+            String comments = "Mod properties file";
+            if (!fieldsDescriptions.isEmpty()) {
+                comments += "\nField descriptions:" + fieldsDescriptions;
+            }
+            properties.store(new FileOutputStream(propertiesFile), comments);
         } catch (FileNotFoundException e) {
             ServerCountryFlags.LOGGER.error("Couldn't save the properties file because it doesn't exist");
         } catch (IOException e) {

@@ -26,12 +26,12 @@ public class ServerCountryFlags implements ClientModInitializer {
 	public static final String MOD_ID = "servercountryflags";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static final String API_NAME = "http://ip-api.com/json/";
-	public static final int API_FIELDS = 16403;
-	public static final int API_FIELDS_LONLAT = 16595;
+	public static final int API_FIELDS = 541395;
 	public static String apiLanguage = null;
 
 	public static HashMap<String, LocationInfo> servers = new HashMap<>();
 	public static HashMap<String, Float> flagAspectRatios = new HashMap<>();
+	public static boolean flagAspectRatiosLoaded = false;
 
 	public static LocationInfo localLocation = null;
 
@@ -47,21 +47,26 @@ public class ServerCountryFlags implements ClientModInitializer {
 			ResourceManager manager = MinecraftClient.getInstance().getResourceManager();
 			Map<Identifier, Resource> resourceLocations = manager.findResources("textures/flags", path -> true);
 
-			for (Map.Entry<Identifier, Resource> entry : resourceLocations.entrySet()) {
-				if (!entry.getKey().getNamespace().equals(MOD_ID))
-					continue;
-				try {
-					NativeImage image = NativeImage.read(entry.getValue().getInputStream());
-					String code = last(entry.getKey().getPath().split("/"));
-					code = code.substring(0, code.length() - 4);
-					flagAspectRatios.put(code, (float)image.getWidth() / (float)image.getHeight());
-				} catch (IOException e) {
-					e.printStackTrace();
+			Thread flagThread = new Thread(() -> {
+				for (Map.Entry<Identifier, Resource> entry : resourceLocations.entrySet()) {
+					if (!entry.getKey().getNamespace().equals(MOD_ID))
+						continue;
+					try {
+						NativeImage image = NativeImage.read(entry.getValue().getInputStream());
+						String code = last(entry.getKey().getPath().split("/"));
+						code = code.substring(0, code.length() - 4);
+						flagAspectRatios.put(code, (float)image.getWidth() / (float)image.getHeight());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
-			}
+				flagAspectRatiosLoaded = true;
+			});
+			flagThread.setName("Flag load thread");
+			flagThread.start();
 		});
-		LocationInfo local = getServerLocationInfo("", true);
-		if (local != null && local.success && local.hasLonlat()) {
+		LocationInfo local = getServerLocationInfo("");
+		if (local != null && local.success) {
 			ServerCountryFlags.localLocation = local;
 		}
 	}
@@ -88,13 +93,13 @@ public class ServerCountryFlags implements ClientModInitializer {
 		}
 	}
 
-	public static LocationInfo getServerLocationInfo(String ip, boolean withLonlat) {
+	public static LocationInfo getServerLocationInfo(String ip) {
 		// If the IP is local, make the API give us our location
 		if (ip.equals("127.0.0.1") || ip.startsWith("192.168")) {
 			ip = "";
 		}
 
-		String apiUrlStr = API_NAME + ip + "?fields=" + (withLonlat ? API_FIELDS_LONLAT : API_FIELDS);
+		String apiUrlStr = API_NAME + ip + "?fields=" + API_FIELDS;
 		if (apiLanguage != null) {
 			apiUrlStr += "&lang=" + apiLanguage;
 		}

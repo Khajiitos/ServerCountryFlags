@@ -37,18 +37,25 @@ public class ServerEntryMixin {
 
     @Inject(at = @At("TAIL"), method = "render")
     public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo info) {
+        if (!ServerCountryFlags.flagAspectRatiosLoaded) {
+            ServerCountryFlags.LOGGER.error("In the server list before the flags were loaded?");
+            return;
+        }
+
         String toolTip = null;
         String countryCode = "unknown";
         LocationInfo locationInfo = ServerCountryFlags.servers.get(server.address);
 
         if (locationInfo != null) {
             if (locationInfo.success) {
-                toolTip = locationInfo.cityName + ", " + locationInfo.countryName;
+                toolTip = (Config.showDistrict && !locationInfo.districtName.equals("") ? (locationInfo.districtName + ", ") : "") + locationInfo.cityName + ", " + locationInfo.countryName;
                 countryCode = locationInfo.countryCode;
             } else {
                 ServerCountryFlags.LOGGER.error("Somehow a server has a failed ServerLocationInfo associated to it?");
                 return;
             }
+        } else if (!Config.displayUnknownFlag) {
+            return;
         }
 
         if (!ServerCountryFlags.flagAspectRatios.containsKey(countryCode)) {
@@ -76,10 +83,15 @@ public class ServerEntryMixin {
         if (mouseX >= x + entryWidth - width - 6 && mouseX <= x + entryWidth - 6 && mouseY >= y + entryHeight - height - 4 && mouseY <= y + entryHeight - 4) {
             List<Text> toolTipList = new ArrayList<>();
             toolTipList.add(toolTip != null ? Text.literal(toolTip) : Text.translatable("locationInfo.unknown"));
-            if (Config.showDistance && locationInfo != null && locationInfo.hasLonlat()) {
-                double distanceFromLocal = locationInfo.getDistanceFromLocal(Config.useKm);
-                if (distanceFromLocal != -1.0) {
-                    toolTipList.add(Text.translatable("locationInfo.distance", (int)distanceFromLocal, Text.translatable(Config.useKm ? "locationInfo.km" : "locationInfo.mi")).formatted(Formatting.ITALIC));
+            if (locationInfo != null) {
+                if (Config.showISP && !locationInfo.ispName.equals("")) {
+                    toolTipList.add(Text.translatable("locationInfo.isp", locationInfo.ispName));
+                }
+                if (Config.showDistance) {
+                    double distanceFromLocal = locationInfo.getDistanceFromLocal(Config.useKm);
+                    if (distanceFromLocal != -1.0) {
+                        toolTipList.add(Text.translatable("locationInfo.distance", (int)distanceFromLocal, Text.translatable(Config.useKm ? "locationInfo.km" : "locationInfo.mi")).formatted(Formatting.ITALIC));
+                    }
                 }
             }
             screen.setMultiplayerScreenTooltip(toolTipList);

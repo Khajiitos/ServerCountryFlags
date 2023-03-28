@@ -2,5 +2,6 @@
   "locationInfo.unknown": "(unknown)",
   "locationInfo.distance": "≈ %d %s away",
   "locationInfo.km": "km",
-  "locationInfo.mi": "mi"
+  "locationInfo.mi": "mi",
+  "locationInfo.isp": "ISP: %s"
 }

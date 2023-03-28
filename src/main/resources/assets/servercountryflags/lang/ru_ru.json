@@ -2,5 +2,6 @@
   "locationInfo.unknown": "(неизвестно)",
   "locationInfo.distance": "≈ %d %s отсюда",
   "locationInfo.km": "км",
-  "locationInfo.mi": "миль"
+  "locationInfo.mi": "миль",
+  "locationInfo.isp": "ИСП: %s"
 }

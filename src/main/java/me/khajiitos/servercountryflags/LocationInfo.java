@@ -2,6 +2,8 @@ package me.khajiitos.servercountryflags;
 
 import com.google.gson.JsonObject;
 
+import java.util.List;
+
 public class LocationInfo {
     private static final double MILE_KM_RATIO = 1.609344;
 
@@ -9,6 +11,8 @@ public class LocationInfo {
     public String countryCode = null;
     public String countryName = null;
     public String cityName = null;
+    public String districtName = null;
+    public String ispName = null;
     public double latitude = -1.0;
     public double longitude = -1.0;
     private double distanceFromLocal = -1.0; // in miles
@@ -26,16 +30,16 @@ public class LocationInfo {
             ServerCountryFlags.LOGGER.error(apiObject.toString());
             return;
         }
-        if (apiObject.has("country") && apiObject.has("countryCode") && apiObject.has("city")) {
+        if (apiObject.keySet().containsAll(List.of("country", "countryCode", "city", "lon", "lat", "district", "isp"))) {
             this.countryName = apiObject.get("country").getAsString();
             this.countryCode = apiObject.get("countryCode").getAsString().toLowerCase();
             this.cityName = apiObject.get("city").getAsString();
+            this.districtName = apiObject.get("district").getAsString();
+            this.ispName = apiObject.get("isp").getAsString();
 
-            if (apiObject.has("lon") && apiObject.has("lat")) {
-                this.longitude = apiObject.get("lon").getAsDouble();
-                this.latitude = apiObject.get("lat").getAsDouble();
-                this.distanceFromLocal = calculateDistanceFromLocal();
-            }
+            this.longitude = apiObject.get("lon").getAsDouble();
+            this.latitude = apiObject.get("lat").getAsDouble();
+            this.distanceFromLocal = calculateDistanceFromLocal();
         } else {
             ServerCountryFlags.LOGGER.error("API Object is incomplete");
             ServerCountryFlags.LOGGER.error(apiObject.toString());
@@ -57,10 +61,6 @@ public class LocationInfo {
                     * Math.cos(Math.toRadians(theta))
             )) * 69.09; // nice
         return distance;
-    }
-
-    public boolean hasLonlat() {
-        return this.latitude != -1.0 && this.longitude != -1.0;
     }
 
     public double getDistanceFromLocal(boolean inKm) {
