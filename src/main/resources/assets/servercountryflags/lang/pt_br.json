@@ -3,5 +3,7 @@
   "locationInfo.distance": "≈ %d %s de distância",
   "locationInfo.km": "km",
   "locationInfo.mi": "mi",
-  "locationInfo.isp": "ISP: %s"
+  "locationInfo.isp": "ISP: %s",
+  "servermap.title": "Mapa do servidor",
+  "servermap.home": "Casa"
 }

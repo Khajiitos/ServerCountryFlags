@@ -2,8 +2,9 @@ package me.khajiitos.servercountryflags.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.khajiitos.servercountryflags.Config;
-import me.khajiitos.servercountryflags.ServerCountryFlags;
 import me.khajiitos.servercountryflags.LocationInfo;
+import me.khajiitos.servercountryflags.ServerCountryFlags;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
@@ -35,10 +36,24 @@ public class ServerEntryMixin {
 
     private static boolean printedError = false;
 
+    private static String originalName;
+
+    @Inject(at = @At("HEAD"), method = "render")
+    public void renderHead(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo info) {
+        if (!ServerCountryFlags.flagAspectRatiosLoaded) {
+            ServerCountryFlags.LOGGER.error("In the server list before the flags were loaded?");
+            return;
+        }
+
+        originalName = this.server.name;
+        if (Config.flagPosition.equalsIgnoreCase("behindName")) {
+            this.server.name = "";
+        }
+    }
+
     @Inject(at = @At("TAIL"), method = "render")
     public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo info) {
         if (!ServerCountryFlags.flagAspectRatiosLoaded) {
-            ServerCountryFlags.LOGGER.error("In the server list before the flags were loaded?");
             return;
         }
 
@@ -55,7 +70,39 @@ public class ServerEntryMixin {
                 return;
             }
         } else if (!Config.displayUnknownFlag) {
+            if (Config.flagPosition.equalsIgnoreCase("behindname")) {
+                this.server.name = originalName;
+                MinecraftClient.getInstance().textRenderer.draw(matrices, this.server.name, (float)(x + 35), (float)(y + 1), 16777215);
+            }
             return;
+        }
+
+        int height = 12;
+        double aspect = ServerCountryFlags.flagAspectRatios.get(countryCode);
+        int width = (int)(aspect * height);
+        int startingX, startingY;
+
+        switch (Config.flagPosition.toLowerCase()) {
+            case "left" -> {
+                startingX = x - width - 6;
+                startingY = y + (entryHeight / 2) - (height / 2);
+            }
+            case "right" -> {
+                startingX = x + entryWidth + 10;
+                startingY = y + (entryHeight / 2) - (height / 2);
+            }
+            case "behindname" -> {
+                height = 8;
+                width = (int) (aspect * height);
+                startingX = x + 35;
+                startingY = y + 1;
+                this.server.name = originalName;
+                MinecraftClient.getInstance().textRenderer.draw(matrices, this.server.name, (float)(startingX + width + 3), (float)(y + 1), 16777215);
+            }
+            default -> {
+                startingX = x + entryWidth - width - 6;
+                startingY = y + entryHeight - height - 4;
+            }
         }
 
         if (!ServerCountryFlags.flagAspectRatios.containsKey(countryCode)) {
@@ -66,21 +113,17 @@ public class ServerEntryMixin {
             countryCode = "unknown";
         }
 
-        Identifier textureId = new Identifier("servercountryflags", "textures/flags/" + countryCode + ".png");
-
-        int height = 12;
-        int width = (int)(ServerCountryFlags.flagAspectRatios.get(countryCode) * height);
+        Identifier textureId = new Identifier(ServerCountryFlags.MOD_ID, "textures/flags/" + countryCode + ".png");
 
         RenderSystem.setShaderTexture(0, textureId);
         RenderSystem.enableBlend();
-        DrawableHelper.drawTexture(matrices, x + entryWidth - width - 6, y + entryHeight - height - 4, 0.0F, 0.0F, width, height, width, height);
+        DrawableHelper.drawTexture(matrices, startingX, startingY, 0.0F, 0.0F, width, height, width, height);
         if (Config.flagBorder) {
             final int color = (Config.borderR << 16) | (Config.borderG << 8) | Config.borderB | (Config.borderA << 24);
-            DrawableHelper.drawBorder(matrices, x + entryWidth - width - 7, y + entryHeight - height - 5, width + 2, height + 2, color);
+            DrawableHelper.drawBorder(matrices, startingX - 1, startingY - 1, width + 2, height + 2, color);
         }
         RenderSystem.disableBlend();
-
-        if (mouseX >= x + entryWidth - width - 6 && mouseX <= x + entryWidth - 6 && mouseY >= y + entryHeight - height - 4 && mouseY <= y + entryHeight - 4) {
+        if (mouseX >= startingX && mouseX <= startingX + width && mouseY >= startingY && mouseY <= startingY + height) {
             List<Text> toolTipList = new ArrayList<>();
             toolTipList.add(toolTip != null ? Text.literal(toolTip) : Text.translatable("locationInfo.unknown"));
             if (locationInfo != null) {

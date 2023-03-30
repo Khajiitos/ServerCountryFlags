@@ -1,6 +1,8 @@
 package me.khajiitos.servercountryflags;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -43,6 +45,15 @@ public class Config {
 
     @ConfigEntry(description = "Shows the ISP of the host, if available")
     public static boolean showISP = false;
+
+    @ConfigEntry(description = "Shows a map button in the server list which opens the server map")
+    public static boolean mapButton = true;
+
+    @ConfigEntry(description = "Shows your location on the server map too")
+    public static boolean showHomeOnMap = true;
+
+    @ConfigEntry(description = "Changes the flags' positions. Available options: default, left, right, behindName")
+    public static String flagPosition = "default";
 
     private static File configDirectory;
     private static File propertiesFile;
@@ -117,10 +128,20 @@ public class Config {
             save();
         }
 
+        afterLoad();
+    }
+
+    private static void afterLoad() {
         if (forceEnglish) {
             ServerCountryFlags.updateAPILanguage(null);
         } else if (MinecraftClient.getInstance().getLanguageManager() != null) {
             ServerCountryFlags.updateAPILanguage(MinecraftClient.getInstance().getLanguageManager().getLanguage());
+        }
+
+        // So that the map button appears/disappears without having to reopen the screen
+        Screen screen = MinecraftClient.getInstance().currentScreen;
+        if (screen instanceof MultiplayerScreen) {
+            screen.resize(MinecraftClient.getInstance(), screen.width, screen.height);
         }
     }
 

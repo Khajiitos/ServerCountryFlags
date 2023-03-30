@@ -3,5 +3,7 @@
   "locationInfo.distance": "≈ %d %s отсюда",
   "locationInfo.km": "км",
   "locationInfo.mi": "миль",
-  "locationInfo.isp": "ИСП: %s"
+  "locationInfo.isp": "ИСП: %s",
+  "servermap.title": "Карта сервера",
+  "servermap.home": "Дом"
 }

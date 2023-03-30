@@ -5,6 +5,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.*;
+import net.minecraft.client.option.ServerList;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -15,12 +17,15 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class ServerCountryFlags implements ClientModInitializer {
 	public static final String MOD_ID = "servercountryflags";
@@ -28,10 +33,12 @@ public class ServerCountryFlags implements ClientModInitializer {
 	public static final String API_NAME = "http://ip-api.com/json/";
 	public static final int API_FIELDS = 541395;
 	public static String apiLanguage = null;
+	public static ServerList serverList; // Servers from the server list
 
-	public static HashMap<String, LocationInfo> servers = new HashMap<>();
+	public static HashMap<String, LocationInfo> servers = new HashMap<>(); // Servers' flags
 	public static HashMap<String, Float> flagAspectRatios = new HashMap<>();
 	public static boolean flagAspectRatiosLoaded = false;
+	public static RedirectResolver redirectResolver = RedirectResolver.createSrv();
 
 	public static LocationInfo localLocation = null;
 
@@ -65,10 +72,13 @@ public class ServerCountryFlags implements ClientModInitializer {
 			flagThread.setName("Flag load thread");
 			flagThread.start();
 		});
-		LocationInfo local = getServerLocationInfo("");
-		if (local != null && local.success) {
-			ServerCountryFlags.localLocation = local;
-		}
+
+		CompletableFuture.runAsync(() -> {
+			LocationInfo local = getServerLocationInfo("");
+			if (local != null && local.success) {
+				ServerCountryFlags.localLocation = local;
+			}
+		});
 	}
 
 	public static void updateAPILanguage(String language) {
@@ -122,5 +132,26 @@ public class ServerCountryFlags implements ClientModInitializer {
 			ServerCountryFlags.LOGGER.error(e.getMessage());
 		}
 		return null;
+	}
+
+	public static void updateServerLocationInfo(String serverAddress) {
+		CompletableFuture.runAsync(() -> {
+			ServerAddress parsedAddress = ServerAddress.parse(serverAddress);
+			Optional<Address> optional = AddressResolver.DEFAULT.resolve(parsedAddress);
+			if (optional.isPresent()) {
+				InetSocketAddress address = optional.get().getInetSocketAddress();
+				Optional<ServerAddress> redirect = redirectResolver.lookupRedirect(parsedAddress);
+				if (redirect.isPresent()) {
+					Optional<Address> resolved = AddressResolver.DEFAULT.resolve(redirect.get());
+					if (resolved.isPresent()) {
+						address = resolved.get().getInetSocketAddress();
+					}
+				}
+				LocationInfo locationInfo = getServerLocationInfo(address.getAddress().getHostAddress());
+				if (locationInfo != null && locationInfo.success) {
+					servers.put(serverAddress, locationInfo);
+				}
+			}
+		});
 	}
 }
