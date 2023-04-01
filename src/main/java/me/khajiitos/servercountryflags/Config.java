@@ -53,7 +53,7 @@ public class Config {
     public static boolean showHomeOnMap = true;
 
     @ConfigEntry(description = "Changes the flags' positions. Available options: default, left, right, behindName")
-    public static String flagPosition = "default";
+    public static String flagPosition = "behindName";
 
     private static File configDirectory;
     private static File propertiesFile;

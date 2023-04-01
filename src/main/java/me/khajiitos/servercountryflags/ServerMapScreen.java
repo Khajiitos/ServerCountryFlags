@@ -11,25 +11,40 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.joml.Vector2i;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class ServerMapScreen extends Screen {
-    public static final Identifier MAP_TEXTURE = new Identifier(ServerCountryFlags.MOD_ID, "textures/misc/map.png");
+    public static final Identifier MAP_TEXTURE = new Identifier(ServerCountryFlags.MOD_ID, "textures/misc/map.jpg");
     public static final Identifier POINT_TEXTURE = new Identifier(ServerCountryFlags.MOD_ID, "textures/misc/point.png");
     public static final Identifier POINT_HOVERED_TEXTURE = new Identifier(ServerCountryFlags.MOD_ID, "textures/misc/point_hovered.png");
     public static final Identifier POINT_HOME_TEXTURE = new Identifier(ServerCountryFlags.MOD_ID, "textures/misc/point_home.png");
-    public static final double MAP_TEXTURE_ASPECT = 1920.0 / 960.0;
+    public static final double MAP_TEXTURE_ASPECT = 3600.0 / 1808.0;
     public static final double POINT_TEXTURE_ASPECT = 526.0 / 754.0;
+    public static final double ZOOM_STRENGTH = 0.1;
 
-    public final Screen parent;
-    public ArrayList<Point> points = new ArrayList<>();
+    private int mapStartX, mapStartY, mapWidth, mapHeight;
+    private final Screen parent;
+    private ArrayList<Point> points = new ArrayList<>();
+    private final ZoomedArea zoomedArea = new ZoomedArea();
+    private boolean movingMap = false;
+    private double movingMapLastX = -1.0;
+    private double movingMapLastY = -1.0;
 
     public ServerMapScreen(Screen parent) {
-        super(Text.literal("Server Map"));
+        super(Text.translatable("servermap.title"));
         this.parent = parent;
+
+        if (Config.showHomeOnMap && ServerCountryFlags.localLocation != null) {
+            addPoint(null, ServerCountryFlags.localLocation);
+        }
+
+        for (Map.Entry<String, LocationInfo> entry : ServerCountryFlags.servers.entrySet()) {
+            addPoint(entry.getKey(), entry.getValue());
+        }
     }
 
     public Point getPoint(double lon, double lat) {
@@ -39,6 +54,68 @@ public class ServerMapScreen extends Screen {
             }
         }
         return null;
+    }
+
+    public double clampDouble(double value, double min, double max) {
+        if (value > max)
+            value = max;
+        else if (value < min)
+            value = min;
+        return value;
+    }
+
+    @Override
+    public void mouseMoved(double mouseX, double mouseY) {
+        super.mouseMoved(mouseX, mouseY);
+        if (this.movingMap) {
+            double deltaX = (this.movingMapLastX - mouseX) / this.mapWidth;
+            double deltaY = (this.movingMapLastY - mouseY) / this.mapHeight;
+            this.movingMapLastX = mouseX;
+            this.movingMapLastY = mouseY;
+
+            zoomedArea.startX = clampDouble(this.zoomedArea.startX + deltaX, 0.0, 1.0 - zoomedArea.width);
+            zoomedArea.startY = clampDouble(this.zoomedArea.startY + deltaY, 0.0, 1.0 - zoomedArea.height);
+        }
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0) {
+            this.movingMap = false;
+            this.movingMapLastX = -1.0;
+            this.movingMapLastY = -1.0;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0 && mouseX >= mapStartX && mouseX <= mapStartX + mapWidth && mouseY >= mapStartY && mouseY <= mapStartY + mapHeight) {
+            this.movingMap = true;
+            this.movingMapLastX = mouseX;
+            this.movingMapLastY = mouseY;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        if (mouseX >= mapStartX && mouseX <= mapStartX + mapWidth && mouseY >= mapStartY && mouseY <= mapStartY + mapHeight) {
+            double oldWidth = zoomedArea.width;
+            double oldHeight = zoomedArea.height;
+
+            zoomedArea.width = clampDouble(zoomedArea.width - amount * ZOOM_STRENGTH, 0.1, 1.0);
+            zoomedArea.height = clampDouble(zoomedArea.height - amount * ZOOM_STRENGTH, 0.1, 1.0);
+
+            double widthDelta = oldWidth - zoomedArea.width;
+            double heightDelta = oldHeight - zoomedArea.height;
+
+            zoomedArea.startX = clampDouble(zoomedArea.startX + ((mouseX - mapStartX) / mapWidth) * widthDelta, 0.0, 1.0 - zoomedArea.width);
+            zoomedArea.startY = clampDouble(zoomedArea.startY + ((mouseY - mapStartY) / mapHeight) * heightDelta, 0.0, 1.0 - zoomedArea.height);
+            return true;
+        } else {
+            return super.mouseScrolled(mouseX, mouseY, amount);
+        }
     }
 
     private void addPoint(String name, LocationInfo locationInfo) {
@@ -52,14 +129,6 @@ public class ServerMapScreen extends Screen {
 
     @Override
     public void init() {
-        if (Config.showHomeOnMap && ServerCountryFlags.localLocation != null) {
-            addPoint(null, ServerCountryFlags.localLocation);
-        }
-
-        for (Map.Entry<String, LocationInfo> entry : ServerCountryFlags.servers.entrySet()) {
-            addPoint(entry.getKey(), entry.getValue());
-        }
-
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("selectServer.refresh"), (button) -> {
             if (ServerCountryFlags.serverList == null)
                 return;
@@ -84,33 +153,37 @@ public class ServerMapScreen extends Screen {
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackground(matrices);
         super.render(matrices, mouseX, mouseY, delta);
-        DrawableHelper.drawCenteredTextWithShadow(matrices, this.textRenderer, Text.translatable("servermap.title"), this.width / 2, 12, 0xFFFFFFFF);
+        DrawableHelper.drawCenteredTextWithShadow(matrices, this.textRenderer, this.getTitle(), this.width / 2, 12, 0xFFFFFFFF);
         DrawableHelper.fill(matrices, 0, 32, this.width, this.height - 32, 0xAA000000);
 
-        int height = this.height - 64;
-        int width = (int)(height * MAP_TEXTURE_ASPECT);
+        mapHeight = this.height - 64;
+        mapWidth = (int)(mapHeight * MAP_TEXTURE_ASPECT);
 
-        if (width > this.width) {
-            width = this.width;
-            height = (int)(width / MAP_TEXTURE_ASPECT);
+        if (mapWidth > this.width) {
+            mapWidth = this.width;
+            mapHeight = (int)(mapWidth / MAP_TEXTURE_ASPECT);
         }
 
-        int startX = this.width / 2 - width / 2;
-        int startY = 32 + ((this.height - 64) / 2 - height / 2);
+        mapStartX = this.width / 2 - mapWidth / 2;
+        mapStartY = 32 + ((this.height - 64) / 2 - mapHeight / 2);
 
         RenderSystem.setShaderTexture(0, MAP_TEXTURE);
-        RenderSystem.enableBlend();
-        DrawableHelper.drawTexture(matrices, startX, startY, 0, 0, width, height, width, height);
-
+        RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+        RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+        DrawableHelper.drawTexture(matrices, mapStartX, mapStartY, mapWidth, mapHeight, (float)(mapWidth * zoomedArea.startX), (float)(mapHeight * zoomedArea.startY), (int)(mapWidth * zoomedArea.width), (int)(mapHeight * zoomedArea.height), mapWidth, mapHeight);
         Point hoveredPoint = null;
+
+        int pointHeight = mapHeight / 20;
+        int pointWidth = (int)(pointHeight * POINT_TEXTURE_ASPECT);
 
         for (int i = points.size() - 1; i >= 0; i--) {
             Point point = points.get(i);
-            Vector2i coords = latlonToPos(point.lat, point.lon, width, height);
-            int pointHeight = height / 20;
-            int pointWidth = (int)(pointHeight * POINT_TEXTURE_ASPECT);
-            int pointStartX = startX + coords.x - (pointWidth / 2);
-            int pointStartY = startY + coords.y - pointHeight;
+            Vector2i coords = latlonToPos(point.lat, point.lon, mapWidth, mapHeight);
+            int pointStartX = mapStartX + coords.x - (pointWidth / 2);
+            int pointStartY = mapStartY + coords.y - pointHeight;
+
+            if (coords.x < 0 || coords.x > mapWidth - (pointWidth / 2) || coords.y < pointHeight || coords.y > mapHeight)
+                continue;
 
             if (mouseX >= pointStartX && mouseX <= pointStartX + pointWidth && mouseY >= pointStartY && mouseY <= pointStartY + pointHeight) {
                 hoveredPoint = point;
@@ -119,7 +192,7 @@ public class ServerMapScreen extends Screen {
         }
 
         for (Point point : this.points) {
-            point.render(matrices, startX, startY, width, height, hoveredPoint == point);
+            point.render(matrices, hoveredPoint == point);
         }
 
         if (hoveredPoint != null) {
@@ -131,7 +204,7 @@ public class ServerMapScreen extends Screen {
 
     @Override
     public void close() {
-        this.client.setScreen(this.parent);
+        MinecraftClient.getInstance().setScreen(this.parent);
     }
 
     @Override
@@ -188,12 +261,15 @@ public class ServerMapScreen extends Screen {
             return list;
         }
 
-        private boolean render(MatrixStack matrices, int mapStartX, int mapStartY, int mapWidth, int mapHeight, boolean hovered) {
+        private void render(MatrixStack matrices, boolean hovered) {
             Vector2i coords = latlonToPos(this.lat, this.lon, mapWidth, mapHeight);
             int pointHeight = mapHeight / 20;
             int pointWidth = (int)(pointHeight * POINT_TEXTURE_ASPECT);
             int pointStartX = mapStartX + coords.x - (pointWidth / 2);
             int pointStartY = mapStartY + coords.y - pointHeight;
+
+            if (coords.x < 0 || coords.x > mapWidth - (pointWidth / 2) || coords.y < pointHeight || coords.y > mapHeight)
+                return;
 
             Identifier texture = POINT_TEXTURE;
 
@@ -205,8 +281,6 @@ public class ServerMapScreen extends Screen {
 
             RenderSystem.setShaderTexture(0, texture);
             DrawableHelper.drawTexture(matrices, pointStartX, pointStartY, 0, 0, pointWidth, pointHeight, pointWidth, pointHeight);
-
-            return hovered;
         }
 
         public class NamedLocationInfo {
@@ -220,9 +294,22 @@ public class ServerMapScreen extends Screen {
         }
     }
 
+    class ZoomedArea {
+        public double startX;
+        public double startY;
+        public double width;
+        public double height;
+        public ZoomedArea() {
+            startX = 0.0;
+            startY = 0.0;
+            width = 1.0;
+            height = 1.0;
+        }
+    }
+
     private Vector2i latlonToPos(double lat, double lon, int width, int height) {
-        int x = (int)(width * (180.0 + lon) / 360.0);
-        int y = (int)(height * (90.0 - lat) / 180.0);
+        int x = (int)(width * (((180.0 + lon) / 360.0 - zoomedArea.startX) / zoomedArea.height));
+        int y = (int)(height * (((90.0 - lat) / 180.0 - zoomedArea.startY) / zoomedArea.width));
         return new Vector2i(x, y);
     }
 }
