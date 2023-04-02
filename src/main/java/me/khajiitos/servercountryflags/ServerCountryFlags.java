@@ -67,12 +67,7 @@ public class ServerCountryFlags implements ClientModInitializer {
 			flagThread.start();
 		});
 
-		CompletableFuture.runAsync(() -> {
-			LocationInfo local = getServerLocationInfo("");
-			if (local != null && local.success) {
-				ServerCountryFlags.localLocation = local;
-			}
-		});
+		updateLocalLocationInfo();
 	}
 
 	public static void updateAPILanguage(String language) {
@@ -166,7 +161,10 @@ public class ServerCountryFlags implements ClientModInitializer {
 
 	public static void updateLocalLocationInfo() {
 		CompletableFuture.runAsync(() -> {
-			localLocation = getServerLocationInfo("");
+			LocationInfo info = getServerLocationInfo("");
+			if (info != null && info.success) {
+				localLocation = info;
+			}
 		});
 	}
 }
