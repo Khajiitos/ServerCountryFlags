@@ -23,11 +23,6 @@ public class MultiplayerScreenMixin extends Screen {
     @Shadow
     private ServerList serverList;
 
-    @Shadow
-    private boolean initialized;
-
-    private static boolean lastInitialized;
-
     private MultiplayerScreenMixin(Text title) {
         super(title);
     }
@@ -52,16 +47,9 @@ public class MultiplayerScreenMixin extends Screen {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "init")
-    public void initHead(CallbackInfo info) {
-        lastInitialized = initialized;
-    }
-
     @Inject(at = @At("TAIL"), method = "init")
-    public void initTail(CallbackInfo info) {
-        if (!lastInitialized && initialized) {
-            updateServers();
-        }
+    public void init(CallbackInfo info) {
+        updateServers();
 
         if (Config.mapButton) {
             int posX = this.width / 2 + 159;
