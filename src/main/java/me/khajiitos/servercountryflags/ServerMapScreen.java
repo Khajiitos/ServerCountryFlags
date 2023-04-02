@@ -22,7 +22,7 @@ public class ServerMapScreen extends Screen {
     public static final Identifier POINT_TEXTURE = new Identifier(ServerCountryFlags.MOD_ID, "textures/misc/point.png");
     public static final Identifier POINT_HOVERED_TEXTURE = new Identifier(ServerCountryFlags.MOD_ID, "textures/misc/point_hovered.png");
     public static final Identifier POINT_HOME_TEXTURE = new Identifier(ServerCountryFlags.MOD_ID, "textures/misc/point_home.png");
-    public static final double MAP_TEXTURE_ASPECT = 3600.0 / 1808.0;
+    public static final double MAP_TEXTURE_ASPECT = 3600.0 / 1800.0;
     public static final double POINT_TEXTURE_ASPECT = 526.0 / 754.0;
     public static final double ZOOM_STRENGTH = 0.1;
 
@@ -104,8 +104,8 @@ public class ServerMapScreen extends Screen {
             double oldWidth = zoomedArea.width;
             double oldHeight = zoomedArea.height;
 
-            zoomedArea.width = clampDouble(zoomedArea.width - amount * ZOOM_STRENGTH, 0.1, 1.0);
-            zoomedArea.height = clampDouble(zoomedArea.height - amount * ZOOM_STRENGTH, 0.1, 1.0);
+            zoomedArea.width = clampDouble(zoomedArea.width - amount * ZOOM_STRENGTH, 0.05, 1.0);
+            zoomedArea.height = clampDouble(zoomedArea.height - amount * ZOOM_STRENGTH, 0.05, 1.0);
 
             double widthDelta = oldWidth - zoomedArea.width;
             double heightDelta = oldHeight - zoomedArea.height;
