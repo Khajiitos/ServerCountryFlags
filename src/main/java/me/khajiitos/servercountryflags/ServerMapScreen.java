@@ -130,17 +130,25 @@ public class ServerMapScreen extends Screen {
     @Override
     public void init() {
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("selectServer.refresh"), (button) -> {
-            if (ServerCountryFlags.serverList == null)
+            this.initTabNavigation();
+            if (ServerCountryFlags.serverList == null) {
                 return;
+            }
 
             if (Config.reloadOnRefresh) {
                 points.clear();
                 ServerCountryFlags.servers.clear();
+                ServerCountryFlags.localLocation = null;
+            }
+
+            if (ServerCountryFlags.localLocation == null) {
+                ServerCountryFlags.updateLocalLocationInfo();
             }
 
             for (int i = 0; i < ServerCountryFlags.serverList.size(); i++) {
-                if (ServerCountryFlags.servers.containsKey(ServerCountryFlags.serverList.get(i).address))
+                if (ServerCountryFlags.servers.containsKey(ServerCountryFlags.serverList.get(i).address)) {
                     continue;
+                }
                 ServerCountryFlags.updateServerLocationInfo(ServerCountryFlags.serverList.get(i).address);
             }
         }).dimensions(this.width / 2 - 105, this.height - 26, 100, 20).build());
@@ -212,8 +220,11 @@ public class ServerMapScreen extends Screen {
         super.tick();
 
         // is this stupid?
+        boolean home = false;
         List<LocationInfo> alreadyUsedLocationInfos = new ArrayList<>();
         for (Point point : points) {
+            if (point.hasHome)
+                home = true;
             for (Point.NamedLocationInfo namedLocationInfo : point.locationInfos) {
                 alreadyUsedLocationInfos.add(namedLocationInfo.locationInfo);
             }
@@ -223,6 +234,10 @@ public class ServerMapScreen extends Screen {
             if (!alreadyUsedLocationInfos.contains(entry.getValue())) {
                 addPoint(entry.getKey(), entry.getValue());
             }
+        }
+
+        if (!home && ServerCountryFlags.localLocation != null) {
+            addPoint(null, ServerCountryFlags.localLocation);
         }
     }
 

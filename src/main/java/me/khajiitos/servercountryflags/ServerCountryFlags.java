@@ -17,14 +17,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.net.*;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class ServerCountryFlags implements ClientModInitializer {
@@ -103,9 +97,24 @@ public class ServerCountryFlags implements ClientModInitializer {
 		}
 	}
 
+	public static boolean isIpLocal(String ip) {
+		if (ip.isEmpty()) {
+			return true;
+		}
+		try {
+			int[] divided = Arrays.stream(ip.split("\\.")).mapToInt(Integer::parseInt).toArray();
+			if (divided.length != 4) {
+				return false;
+			}
+			return (divided[0] == 192 && divided[1] == 168) || (divided[0] == 10) || (divided[0] == 172 && divided[1] >= 16 && divided[1] <= 31);
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+
 	public static LocationInfo getServerLocationInfo(String ip) {
 		// If the IP is local, make the API give us our location
-		if (ip.equals("127.0.0.1") || ip.startsWith("192.168")) {
+		if (isIpLocal(ip)) {
 			ip = "";
 		}
 
@@ -126,9 +135,9 @@ public class ServerCountryFlags implements ClientModInitializer {
 			}
 		} catch (MalformedURLException e) {
 			ServerCountryFlags.LOGGER.error("Malformed API Url: " + apiUrlStr);
-		}
-		catch (IOException e) {
-			ServerCountryFlags.LOGGER.error("Some other exception: " + apiUrlStr);
+		} catch (UnknownHostException e) {
+			ServerCountryFlags.LOGGER.error("Unknown host - no internet?");
+		} catch (IOException e) {
 			ServerCountryFlags.LOGGER.error(e.getMessage());
 		}
 		return null;
@@ -152,6 +161,12 @@ public class ServerCountryFlags implements ClientModInitializer {
 					servers.put(serverAddress, locationInfo);
 				}
 			}
+		});
+	}
+
+	public static void updateLocalLocationInfo() {
+		CompletableFuture.runAsync(() -> {
+			localLocation = getServerLocationInfo("");
 		});
 	}
 }

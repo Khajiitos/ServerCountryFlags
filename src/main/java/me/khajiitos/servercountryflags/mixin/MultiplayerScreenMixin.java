@@ -23,24 +23,44 @@ public class MultiplayerScreenMixin extends Screen {
     @Shadow
     private ServerList serverList;
 
+    @Shadow
+    private boolean initialized;
+
+    private static boolean lastInitialized;
+
     private MultiplayerScreenMixin(Text title) {
         super(title);
+    }
+
+    private void updateServers() {
+        for (int i = 0; i < this.serverList.size(); i++) {
+            if (!ServerCountryFlags.servers.containsKey(this.serverList.get(i).address)) {
+                ServerCountryFlags.updateServerLocationInfo(this.serverList.get(i).address);
+            }
+        }
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
     public void constructor(CallbackInfo info) {
         if (Config.reloadOnRefresh) {
             ServerCountryFlags.servers.clear();
+            ServerCountryFlags.localLocation = null;
+        }
+
+        if (ServerCountryFlags.localLocation == null) {
+            ServerCountryFlags.updateLocalLocationInfo();
         }
     }
 
+    @Inject(at = @At("HEAD"), method = "init")
+    public void initHead(CallbackInfo info) {
+        lastInitialized = initialized;
+    }
+
     @Inject(at = @At("TAIL"), method = "init")
-    public void init(CallbackInfo info) {
-        ServerCountryFlags.serverList = this.serverList;
-        for (int i = 0; i < this.serverList.size(); i++) {
-            if (!ServerCountryFlags.servers.containsKey(this.serverList.get(i).address)) {
-                ServerCountryFlags.updateServerLocationInfo(this.serverList.get(i).address);
-            }
+    public void initTail(CallbackInfo info) {
+        if (!lastInitialized && initialized) {
+            updateServers();
         }
 
         if (Config.mapButton) {

@@ -33,8 +33,6 @@ java {
 	withSourcesJar()
 }
 
-jar {
-	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
-	}
+remapJar {
+	archiveClassifier = project.minecraft_version_group
 }
