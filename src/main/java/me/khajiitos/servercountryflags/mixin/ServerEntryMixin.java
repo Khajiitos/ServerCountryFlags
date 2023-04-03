@@ -1,6 +1,7 @@
 package me.khajiitos.servercountryflags.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import me.khajiitos.servercountryflags.CompatibilityUtils;
 import me.khajiitos.servercountryflags.Config;
 import me.khajiitos.servercountryflags.LocationInfo;
 import me.khajiitos.servercountryflags.ServerCountryFlags;
@@ -120,7 +121,7 @@ public class ServerEntryMixin {
         DrawableHelper.drawTexture(matrices, startingX, startingY, 0.0F, 0.0F, width, height, width, height);
         if (Config.flagBorder) {
             final int color = (Config.borderR << 16) | (Config.borderG << 8) | Config.borderB | (Config.borderA << 24);
-            DrawableHelper.drawBorder(matrices, startingX - 1, startingY - 1, width + 2, height + 2, color);
+            CompatibilityUtils.drawBorder(matrices, startingX - 1, startingY - 1, width + 2, height + 2, color);
         }
         RenderSystem.disableBlend();
         if (mouseX >= startingX && mouseX <= startingX + width && mouseY >= startingY && mouseY <= startingY + height) {
@@ -137,7 +138,7 @@ public class ServerEntryMixin {
                     }
                 }
             }
-            screen.setMultiplayerScreenTooltip(toolTipList);
+            CompatibilityUtils.setMultiplayerScreenTooltip(screen, toolTipList);
         }
     }
 }

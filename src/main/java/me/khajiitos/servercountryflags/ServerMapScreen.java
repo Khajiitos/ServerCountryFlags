@@ -4,13 +4,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import org.joml.Vector2i;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -129,8 +126,8 @@ public class ServerMapScreen extends Screen {
 
     @Override
     public void init() {
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("selectServer.refresh"), (button) -> {
-            this.initTabNavigation();
+        this.addDrawableChild(CompatibilityUtils.buttonWidget(this.width / 2 - 105, this.height - 26, 100, 20, Text.translatable("selectServer.refresh"), (button) -> {
+            this.clearAndInit();
             if (ServerCountryFlags.serverList == null) {
                 return;
             }
@@ -151,17 +148,18 @@ public class ServerMapScreen extends Screen {
                 }
                 ServerCountryFlags.updateServerLocationInfo(ServerCountryFlags.serverList.get(i).address);
             }
-        }).dimensions(this.width / 2 - 105, this.height - 26, 100, 20).build());
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.back"), (button) -> {
+        }));
+
+        this.addDrawableChild(CompatibilityUtils.buttonWidget(this.width / 2 + 5, this.height - 26, 100, 20, Text.translatable("gui.back"), (button) -> {
             MinecraftClient.getInstance().setScreen(this.parent);
-        }).dimensions(this.width / 2 + 5, this.height - 26, 100, 20).build());
+        }));
     }
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackground(matrices);
         super.render(matrices, mouseX, mouseY, delta);
-        DrawableHelper.drawCenteredTextWithShadow(matrices, this.textRenderer, this.getTitle(), this.width / 2, 12, 0xFFFFFFFF);
+        DrawableHelper.drawCenteredTextWithShadow(matrices, this.textRenderer, this.getTitle().asOrderedText(), this.width / 2, 12, 0xFFFFFFFF);
         DrawableHelper.fill(matrices, 0, 32, this.width, this.height - 32, 0xAA000000);
 
         mapHeight = this.height - 64;
@@ -186,7 +184,7 @@ public class ServerMapScreen extends Screen {
 
         for (int i = points.size() - 1; i >= 0; i--) {
             Point point = points.get(i);
-            Vector2i coords = latlonToPos(point.lat, point.lon, mapWidth, mapHeight);
+            Coordinates coords = latlonToPos(point.lat, point.lon, mapWidth, mapHeight);
             int pointStartX = mapStartX + coords.x - (pointWidth / 2);
             int pointStartY = mapStartY + coords.y - pointHeight;
 
@@ -204,7 +202,7 @@ public class ServerMapScreen extends Screen {
         }
 
         if (hoveredPoint != null) {
-            this.setTooltip(hoveredPoint.getTooltip());
+            this.renderTooltip(matrices, hoveredPoint.getTooltip(), mouseX, mouseY);
         }
 
         RenderSystem.disableBlend();
@@ -260,24 +258,24 @@ public class ServerMapScreen extends Screen {
             locationInfos.add(new NamedLocationInfo(name, info));
         }
 
-        public List<OrderedText> getTooltip() {
-            List<OrderedText> list = new ArrayList<>();
+        public List<Text> getTooltip() {
+            List<Text> list = new ArrayList<>();
             for (NamedLocationInfo info : locationInfos) {
                 if (!list.isEmpty()) {
-                    list.add(OrderedText.EMPTY);
+                    list.add(Text.empty());
                 }
                 if (info.name == null) {
-                    list.add(Text.translatable("servermap.home").formatted(Formatting.BOLD).asOrderedText());
+                    list.add(Text.translatable("servermap.home").formatted(Formatting.BOLD));
                 } else {
-                    list.add(Text.literal(info.name).formatted(Formatting.BOLD).asOrderedText());
-                    list.add(Text.literal((Config.showDistrict && !info.locationInfo.districtName.equals("") ? (info.locationInfo.districtName + ", ") : "") + info.locationInfo.cityName + ", " + info.locationInfo.countryName).asOrderedText());
+                    list.add(Text.literal(info.name).formatted(Formatting.BOLD));
+                    list.add(Text.literal((Config.showDistrict && !info.locationInfo.districtName.equals("") ? (info.locationInfo.districtName + ", ") : "") + info.locationInfo.cityName + ", " + info.locationInfo.countryName));
                 }
             }
             return list;
         }
 
         private void render(MatrixStack matrices, boolean hovered) {
-            Vector2i coords = latlonToPos(this.lat, this.lon, mapWidth, mapHeight);
+            Coordinates coords = latlonToPos(this.lat, this.lon, mapWidth, mapHeight);
             int pointHeight = mapHeight / 20;
             int pointWidth = (int)(pointHeight * POINT_TEXTURE_ASPECT);
             int pointStartX = mapStartX + coords.x - (pointWidth / 2);
@@ -322,9 +320,18 @@ public class ServerMapScreen extends Screen {
         }
     }
 
-    private Vector2i latlonToPos(double lat, double lon, int width, int height) {
+    public class Coordinates {
+        public int x, y;
+
+        public Coordinates(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    private Coordinates latlonToPos(double lat, double lon, int width, int height) {
         int x = (int)(width * (((180.0 + lon) / 360.0 - zoomedArea.startX) / zoomedArea.height));
         int y = (int)(height * (((90.0 - lat) / 180.0 - zoomedArea.startY) / zoomedArea.width));
-        return new Vector2i(x, y);
+        return new Coordinates(x, y);
     }
 }
