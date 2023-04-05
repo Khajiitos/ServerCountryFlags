@@ -1,12 +1,10 @@
 package me.khajiitos.servercountryflags;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.lwjgl.opengl.GL11;
 
@@ -26,13 +24,18 @@ public class ServerMapScreen extends Screen {
     private int mapStartX, mapStartY, mapWidth, mapHeight;
     private final Screen parent;
     private ArrayList<Point> points = new ArrayList<>();
-    private final ZoomedArea zoomedArea = new ZoomedArea();
+
+    private double zoomedAreaStartX = 0.0;
+    private double zoomedAreaStartY = 0.0;
+    private double zoomedAreaWidth = 1.0;
+    private double zoomedAreaHeight = 1.0;
+
     private boolean movingMap = false;
     private double movingMapLastX = -1.0;
     private double movingMapLastY = -1.0;
 
     public ServerMapScreen(Screen parent) {
-        super(Text.translatable("servermap.title"));
+        super(Compatibility.translatableText("servermap.title"));
         this.parent = parent;
 
         if (Config.showHomeOnMap && ServerCountryFlags.localLocation != null) {
@@ -65,13 +68,13 @@ public class ServerMapScreen extends Screen {
     public void mouseMoved(double mouseX, double mouseY) {
         super.mouseMoved(mouseX, mouseY);
         if (this.movingMap) {
-            double deltaX = (this.movingMapLastX - mouseX) / this.mapWidth;
-            double deltaY = (this.movingMapLastY - mouseY) / this.mapHeight;
+            double deltaX = (this.movingMapLastX - mouseX) / this.mapWidth * zoomedAreaWidth;
+            double deltaY = (this.movingMapLastY - mouseY) / this.mapHeight * zoomedAreaHeight;
             this.movingMapLastX = mouseX;
             this.movingMapLastY = mouseY;
 
-            zoomedArea.startX = clampDouble(this.zoomedArea.startX + deltaX, 0.0, 1.0 - zoomedArea.width);
-            zoomedArea.startY = clampDouble(this.zoomedArea.startY + deltaY, 0.0, 1.0 - zoomedArea.height);
+            zoomedAreaStartX = clampDouble(zoomedAreaStartX + deltaX, 0.0, 1.0 - zoomedAreaWidth);
+            zoomedAreaStartY = clampDouble(zoomedAreaStartY + deltaY, 0.0, 1.0 - zoomedAreaHeight);
         }
     }
 
@@ -98,17 +101,17 @@ public class ServerMapScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         if (mouseX >= mapStartX && mouseX <= mapStartX + mapWidth && mouseY >= mapStartY && mouseY <= mapStartY + mapHeight) {
-            double oldWidth = zoomedArea.width;
-            double oldHeight = zoomedArea.height;
+            double oldWidth = zoomedAreaWidth;
+            double oldHeight = zoomedAreaHeight;
 
-            zoomedArea.width = clampDouble(zoomedArea.width - amount * ZOOM_STRENGTH, 0.05, 1.0);
-            zoomedArea.height = clampDouble(zoomedArea.height - amount * ZOOM_STRENGTH, 0.05, 1.0);
+            zoomedAreaWidth = clampDouble(zoomedAreaWidth - amount * ZOOM_STRENGTH, 0.05, 1.0);
+            zoomedAreaHeight = clampDouble(zoomedAreaHeight - amount * ZOOM_STRENGTH, 0.05, 1.0);
 
-            double widthDelta = oldWidth - zoomedArea.width;
-            double heightDelta = oldHeight - zoomedArea.height;
+            double widthDelta = oldWidth - zoomedAreaWidth;
+            double heightDelta = oldHeight - zoomedAreaHeight;
 
-            zoomedArea.startX = clampDouble(zoomedArea.startX + ((mouseX - mapStartX) / mapWidth) * widthDelta, 0.0, 1.0 - zoomedArea.width);
-            zoomedArea.startY = clampDouble(zoomedArea.startY + ((mouseY - mapStartY) / mapHeight) * heightDelta, 0.0, 1.0 - zoomedArea.height);
+            zoomedAreaStartX = clampDouble(zoomedAreaStartX + ((mouseX - mapStartX) / mapWidth) * widthDelta, 0.0, 1.0 - zoomedAreaWidth);
+            zoomedAreaStartY = clampDouble(zoomedAreaStartY + ((mouseY - mapStartY) / mapHeight) * heightDelta, 0.0, 1.0 - zoomedAreaHeight);
             return true;
         } else {
             return super.mouseScrolled(mouseX, mouseY, amount);
@@ -126,8 +129,10 @@ public class ServerMapScreen extends Screen {
 
     @Override
     public void init() {
-        this.addDrawableChild(CompatibilityUtils.buttonWidget(this.width / 2 - 105, this.height - 26, 100, 20, Text.translatable("selectServer.refresh"), (button) -> {
-            this.clearAndInit();
+        this.addDrawableChild(Compatibility.buttonWidget(this.width / 2 - 105, this.height - 26, 100, 20, Compatibility.translatableText("selectServer.refresh"), (button) -> {
+            this.clearChildren();
+            this.init();
+
             if (ServerCountryFlags.serverList == null) {
                 return;
             }
@@ -150,8 +155,8 @@ public class ServerMapScreen extends Screen {
             }
         }));
 
-        this.addDrawableChild(CompatibilityUtils.buttonWidget(this.width / 2 + 5, this.height - 26, 100, 20, Text.translatable("gui.back"), (button) -> {
-            MinecraftClient.getInstance().setScreen(this.parent);
+        this.addDrawableChild(Compatibility.buttonWidget(this.width / 2 + 5, this.height - 26, 100, 20, Compatibility.translatableText("gui.back"), (button) -> {
+            Compatibility.setScreen(this.parent);
         }));
     }
 
@@ -176,7 +181,7 @@ public class ServerMapScreen extends Screen {
         RenderSystem.setShaderTexture(0, MAP_TEXTURE);
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-        DrawableHelper.drawTexture(matrices, mapStartX, mapStartY, mapWidth, mapHeight, (float)(mapWidth * zoomedArea.startX), (float)(mapHeight * zoomedArea.startY), (int)(mapWidth * zoomedArea.width), (int)(mapHeight * zoomedArea.height), mapWidth, mapHeight);
+        DrawableHelper.drawTexture(matrices, mapStartX, mapStartY, mapWidth, mapHeight, (float)(mapWidth * zoomedAreaStartX), (float)(mapHeight * zoomedAreaStartY), (int)(mapWidth * zoomedAreaWidth), (int)(mapHeight * zoomedAreaHeight), mapWidth, mapHeight);
         Point hoveredPoint = null;
 
         int pointHeight = mapHeight / 20;
@@ -208,9 +213,13 @@ public class ServerMapScreen extends Screen {
         RenderSystem.disableBlend();
     }
 
-    @Override
+    // In 1.19, the close function is called close(), and in older versions it's called onClose()
     public void close() {
-        MinecraftClient.getInstance().setScreen(this.parent);
+        Compatibility.setScreen(this.parent);
+    }
+
+    public void onClose() {
+        Compatibility.setScreen(this.parent);
     }
 
     @Override
@@ -262,13 +271,13 @@ public class ServerMapScreen extends Screen {
             List<Text> list = new ArrayList<>();
             for (NamedLocationInfo info : locationInfos) {
                 if (!list.isEmpty()) {
-                    list.add(Text.empty());
+                    list.add(Text.of(""));
                 }
                 if (info.name == null) {
-                    list.add(Text.translatable("servermap.home").formatted(Formatting.BOLD));
+                    list.add(Compatibility.translatableText("servermap.home")/*.formatted(Formatting.BOLD)*/);
                 } else {
-                    list.add(Text.literal(info.name).formatted(Formatting.BOLD));
-                    list.add(Text.literal((Config.showDistrict && !info.locationInfo.districtName.equals("") ? (info.locationInfo.districtName + ", ") : "") + info.locationInfo.cityName + ", " + info.locationInfo.countryName));
+                    list.add(Compatibility.literalText(info.name)/*.formatted(Formatting.BOLD)*/);
+                    list.add(Compatibility.literalText((Config.showDistrict && !info.locationInfo.districtName.equals("") ? (info.locationInfo.districtName + ", ") : "") + info.locationInfo.cityName + ", " + info.locationInfo.countryName));
                 }
             }
             return list;
@@ -307,19 +316,6 @@ public class ServerMapScreen extends Screen {
         }
     }
 
-    class ZoomedArea {
-        public double startX;
-        public double startY;
-        public double width;
-        public double height;
-        public ZoomedArea() {
-            startX = 0.0;
-            startY = 0.0;
-            width = 1.0;
-            height = 1.0;
-        }
-    }
-
     public class Coordinates {
         public int x, y;
 
@@ -330,8 +326,8 @@ public class ServerMapScreen extends Screen {
     }
 
     private Coordinates latlonToPos(double lat, double lon, int width, int height) {
-        int x = (int)(width * (((180.0 + lon) / 360.0 - zoomedArea.startX) / zoomedArea.height));
-        int y = (int)(height * (((90.0 - lat) / 180.0 - zoomedArea.startY) / zoomedArea.width));
+        int x = (int)(width * (((180.0 + lon) / 360.0 - zoomedAreaStartX) / zoomedAreaHeight));
+        int y = (int)(height * (((90.0 - lat) / 180.0 - zoomedAreaStartY) / zoomedAreaWidth));
         return new Coordinates(x, y);
     }
 }

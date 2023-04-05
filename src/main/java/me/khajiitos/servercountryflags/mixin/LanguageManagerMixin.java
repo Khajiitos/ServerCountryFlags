@@ -1,6 +1,6 @@
 package me.khajiitos.servercountryflags.mixin;
 
-import me.khajiitos.servercountryflags.CompatibilityUtils;
+import me.khajiitos.servercountryflags.Compatibility;
 import me.khajiitos.servercountryflags.ServerCountryFlags;
 import net.minecraft.client.resource.language.LanguageManager;
 import net.minecraft.resource.ResourceManager;
@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class LanguageManagerMixin {
     @Inject(at = @At("TAIL"), method = "reload")
     public void reload(ResourceManager manager, CallbackInfo info) {
-        ServerCountryFlags.updateAPILanguage(CompatibilityUtils.getLanguageCode());
+        ServerCountryFlags.updateAPILanguage(Compatibility.getLanguageCode());
     }
 }

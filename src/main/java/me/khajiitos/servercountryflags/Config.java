@@ -135,7 +135,7 @@ public class Config {
         if (forceEnglish) {
             ServerCountryFlags.updateAPILanguage(null);
         } else if (MinecraftClient.getInstance().getLanguageManager() != null) {
-            ServerCountryFlags.updateAPILanguage(CompatibilityUtils.getLanguageCode());
+            ServerCountryFlags.updateAPILanguage(Compatibility.getLanguageCode());
         }
 
         // So that the map button appears/disappears without having to reopen the screen

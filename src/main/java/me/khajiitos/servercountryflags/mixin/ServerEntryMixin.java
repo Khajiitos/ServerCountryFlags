@@ -1,7 +1,7 @@
 package me.khajiitos.servercountryflags.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import me.khajiitos.servercountryflags.CompatibilityUtils;
+import me.khajiitos.servercountryflags.Compatibility;
 import me.khajiitos.servercountryflags.Config;
 import me.khajiitos.servercountryflags.LocationInfo;
 import me.khajiitos.servercountryflags.ServerCountryFlags;
@@ -121,24 +121,25 @@ public class ServerEntryMixin {
         DrawableHelper.drawTexture(matrices, startingX, startingY, 0.0F, 0.0F, width, height, width, height);
         if (Config.flagBorder) {
             final int color = (Config.borderR << 16) | (Config.borderG << 8) | Config.borderB | (Config.borderA << 24);
-            CompatibilityUtils.drawBorder(matrices, startingX - 1, startingY - 1, width + 2, height + 2, color);
+            Compatibility.drawBorder(matrices, startingX - 1, startingY - 1, width + 2, height + 2, color);
         }
         RenderSystem.disableBlend();
         if (mouseX >= startingX && mouseX <= startingX + width && mouseY >= startingY && mouseY <= startingY + height) {
             List<Text> toolTipList = new ArrayList<>();
-            toolTipList.add(toolTip != null ? Text.literal(toolTip) : Text.translatable("locationInfo.unknown"));
+
+            toolTipList.add(toolTip != null ? Compatibility.literalText(toolTip) : Compatibility.translatableText("locationInfo.unknown"));
             if (locationInfo != null) {
                 if (Config.showISP && !locationInfo.ispName.equals("")) {
-                    toolTipList.add(Text.translatable("locationInfo.isp", locationInfo.ispName));
+                    toolTipList.add(Compatibility.translatableText("locationInfo.isp", locationInfo.ispName));
                 }
                 if (Config.showDistance) {
                     double distanceFromLocal = locationInfo.getDistanceFromLocal(Config.useKm);
                     if (distanceFromLocal != -1.0) {
-                        toolTipList.add(Text.translatable("locationInfo.distance", (int)distanceFromLocal, Text.translatable(Config.useKm ? "locationInfo.km" : "locationInfo.mi")).formatted(Formatting.ITALIC));
+                        toolTipList.add(Compatibility.translatableText("locationInfo.distance", (int)distanceFromLocal, Compatibility.translatableText(Config.useKm ? "locationInfo.km" : "locationInfo.mi"))/*.formatted(Formatting.ITALIC)*/);
                     }
                 }
             }
-            CompatibilityUtils.setMultiplayerScreenTooltip(screen, toolTipList);
+            Compatibility.setMultiplayerScreenTooltip(screen, toolTipList);
         }
     }
 }

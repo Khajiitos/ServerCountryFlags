@@ -30,7 +30,8 @@ public class LocationInfo {
             ServerCountryFlags.LOGGER.error(apiObject.toString());
             return;
         }
-        if (apiObject.keySet().containsAll(List.of("country", "countryCode", "city", "lon", "lat", "district", "isp"))) {
+
+        if (Compatibility.jsonObjectContainsAllFields(apiObject, List.of("country", "countryCode", "city", "lon", "lat", "district", "isp"))) {
             this.countryName = apiObject.get("country").getAsString();
             this.countryCode = apiObject.get("countryCode").getAsString().toLowerCase();
             this.cityName = apiObject.get("city").getAsString();

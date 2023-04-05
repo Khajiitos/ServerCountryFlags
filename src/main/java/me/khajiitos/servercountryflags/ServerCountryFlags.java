@@ -2,14 +2,16 @@ package me.khajiitos.servercountryflags;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import net.fabricmc.api.ClientModInitializer;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.*;
+import net.minecraft.client.network.Address;
+import net.minecraft.client.network.AddressResolver;
+import net.minecraft.client.network.RedirectResolver;
+import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.option.ServerList;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.resource.Resource;
-import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +28,7 @@ public class ServerCountryFlags implements ClientModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static final String API_NAME = "http://ip-api.com/json/";
 	public static final int API_FIELDS = 541395;
+	public static final boolean isNewerThan1_19_3 = Compatibility.isNewerThan1_19_3();
 	public static String apiLanguage = null;
 	public static ServerList serverList; // Servers from the server list
 
@@ -45,20 +48,24 @@ public class ServerCountryFlags implements ClientModInitializer {
 	public void onInitializeClient() {
 		Config.init();
 		MinecraftClient.getInstance().execute(() -> {
-			ResourceManager manager = MinecraftClient.getInstance().getResourceManager();
-			Map<Identifier, Resource> resourceLocations = manager.findResources("textures/flags", path -> true);
+			Collection<Identifier> resourceLocations = Compatibility.findResources("textures/flags");
 
 			Thread flagThread = new Thread(() -> {
-				for (Map.Entry<Identifier, Resource> entry : resourceLocations.entrySet()) {
-					if (!entry.getKey().getNamespace().equals(MOD_ID))
+				for (Identifier identifier : resourceLocations) {
+					if (!identifier.getNamespace().equals(MOD_ID))
 						continue;
 					try {
-						NativeImage image = NativeImage.read(entry.getValue().getInputStream());
-						String code = last(entry.getKey().getPath().split("/"));
+						Object resource = Compatibility.getResource(identifier);
+						if (resource == null) {
+							ServerCountryFlags.LOGGER.error("Failed to load resource " + identifier.getPath());
+							continue;
+						}
+						NativeImage image = NativeImage.read(Compatibility.getResourceInputStream(resource));
+						String code = last(identifier.getPath().split("/"));
 						code = code.substring(0, code.length() - 4);
 						flagAspectRatios.put(code, (float)image.getWidth() / (float)image.getHeight());
 					} catch (IOException e) {
-						e.printStackTrace();
+						LOGGER.error(e.getMessage());
 					}
 				}
 				flagAspectRatiosLoaded = true;
@@ -122,7 +129,7 @@ public class ServerCountryFlags implements ClientModInitializer {
 			URLConnection con = apiUrl.openConnection();
 			con.setConnectTimeout(3000);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			JsonElement jsonElement = JsonParser.parseReader(reader);
+			JsonElement jsonElement = Compatibility.parseReaderToJson(reader);
 			if (jsonElement.isJsonObject()) {
 				return new LocationInfo((JsonObject) jsonElement);
 			} else {
