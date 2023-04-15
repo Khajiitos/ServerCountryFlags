@@ -47,6 +47,7 @@ public class ServerCountryFlags implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		Config.init();
+		NetworkChangeDetector.check();
 		MinecraftClient.getInstance().execute(() -> {
 			Collection<Identifier> resourceLocations = Compatibility.findResources("textures/flags");
 
@@ -171,6 +172,10 @@ public class ServerCountryFlags implements ClientModInitializer {
 			LocationInfo info = getServerLocationInfo("");
 			if (info != null && info.success) {
 				localLocation = info;
+
+				for (LocationInfo locationInfo : servers.values()) {
+					locationInfo.updateDistanceFromLocal();
+				}
 			}
 		});
 	}

@@ -143,7 +143,7 @@ public class ServerMapScreen extends Screen {
                 ServerCountryFlags.localLocation = null;
             }
 
-            if (ServerCountryFlags.localLocation == null) {
+            if (ServerCountryFlags.localLocation == null || NetworkChangeDetector.check()) {
                 ServerCountryFlags.updateLocalLocationInfo();
             }
 

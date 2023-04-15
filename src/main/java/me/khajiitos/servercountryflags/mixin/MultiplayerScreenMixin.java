@@ -1,9 +1,6 @@
 package me.khajiitos.servercountryflags.mixin;
 
-import me.khajiitos.servercountryflags.Compatibility;
-import me.khajiitos.servercountryflags.Config;
-import me.khajiitos.servercountryflags.ServerCountryFlags;
-import me.khajiitos.servercountryflags.ServerMapScreen;
+import me.khajiitos.servercountryflags.*;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
@@ -42,13 +39,14 @@ public class MultiplayerScreenMixin extends Screen {
             ServerCountryFlags.localLocation = null;
         }
 
-        if (ServerCountryFlags.localLocation == null) {
+        if (ServerCountryFlags.localLocation == null || NetworkChangeDetector.check()) {
             ServerCountryFlags.updateLocalLocationInfo();
         }
     }
 
     @Inject(at = @At("TAIL"), method = "init")
     public void init(CallbackInfo info) {
+        ServerCountryFlags.serverList = serverList;
         updateServers();
 
         if (Config.mapButton) {

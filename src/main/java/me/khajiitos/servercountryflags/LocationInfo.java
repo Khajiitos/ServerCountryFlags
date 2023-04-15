@@ -69,4 +69,8 @@ public class LocationInfo {
             return -1.0;
         return inKm ? this.distanceFromLocal * MILE_KM_RATIO : this.distanceFromLocal;
     }
+
+    public void updateDistanceFromLocal() {
+        this.distanceFromLocal = calculateDistanceFromLocal();
+    }
 }

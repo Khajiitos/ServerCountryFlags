@@ -272,7 +272,6 @@ public class Compatibility {
             throw new ClassNotFoundException();
         } catch (Throwable e) {
             ServerCountryFlags.LOGGER.warn("Failed to check if the version if newer than 1.19.3, assuming that it isn't");
-            e.printStackTrace();
             return false;
         }
     }
