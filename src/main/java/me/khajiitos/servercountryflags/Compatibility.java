@@ -17,6 +17,7 @@ import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
 import java.io.InputStream;
@@ -149,6 +150,19 @@ public class Compatibility {
         } catch (Exception ignored) {}
 
         ServerCountryFlags.LOGGER.error("Failed to get literal text");
+        return null;
+    }
+
+    public static MutableText formatted(MutableText text, Formatting formatting) {
+        // We're invoking formatted through reflection because
+        // in some versions MutableText is a class and in some it's an interface
+        try {
+            String formattedMethodName = resolver.mapMethodName("intermediary", "net.minecraft.class_5250", "method_27692", "(Lnet/minecraft/class_124;)Lnet/minecraft/class_5250;");
+            Method formattedMethod = MutableText.class.getMethod(formattedMethodName, Formatting.class);
+            return (MutableText) formattedMethod.invoke(text, formatting);
+        } catch (Exception ignored) {}
+
+        ServerCountryFlags.LOGGER.error("Failed to get formatted text");
         return null;
     }
 

@@ -5,6 +5,7 @@ import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.lwjgl.opengl.GL11;
 
@@ -274,9 +275,9 @@ public class ServerMapScreen extends Screen {
                     list.add(Text.of(""));
                 }
                 if (info.name == null) {
-                    list.add(Compatibility.translatableText("servermap.home")/*.formatted(Formatting.BOLD)*/);
+                    list.add(Compatibility.formatted(Compatibility.translatableText("servermap.home"), Formatting.BOLD));
                 } else {
-                    list.add(Compatibility.literalText(info.name)/*.formatted(Formatting.BOLD)*/);
+                    list.add(Compatibility.formatted(Compatibility.literalText(info.name), Formatting.BOLD));
                     list.add(Compatibility.literalText((Config.showDistrict && !info.locationInfo.districtName.equals("") ? (info.locationInfo.districtName + ", ") : "") + info.locationInfo.cityName + ", " + info.locationInfo.countryName));
                 }
             }

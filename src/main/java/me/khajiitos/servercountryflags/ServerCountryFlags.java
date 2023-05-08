@@ -3,7 +3,6 @@ package me.khajiitos.servercountryflags;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.Address;
 import net.minecraft.client.network.AddressResolver;
@@ -11,7 +10,6 @@ import net.minecraft.client.network.RedirectResolver;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.option.ServerList;
 import net.minecraft.client.texture.NativeImage;
-import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,7 +107,7 @@ public class ServerCountryFlags implements ClientModInitializer {
 			if (divided.length != 4) {
 				return false;
 			}
-			return (divided[0] == 192 && divided[1] == 168) || (divided[0] == 10) || (divided[0] == 172 && divided[1] >= 16 && divided[1] <= 31);
+			return (divided[0] == 127 && divided[1] == 0 && divided[2] == 0 && divided[3] == 1) || (divided[0] == 192 && divided[1] == 168) || (divided[0] == 10) || (divided[0] == 172 && divided[1] >= 16 && divided[1] <= 31);
 		} catch (NumberFormatException e) {
 			return false;
 		}
@@ -129,8 +127,15 @@ public class ServerCountryFlags implements ClientModInitializer {
 			URL apiUrl = new URL(apiUrlStr);
 			URLConnection con = apiUrl.openConnection();
 			con.setConnectTimeout(3000);
+
 			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			JsonElement jsonElement = Compatibility.parseReaderToJson(reader);
+
+			if (jsonElement == null) {
+				ServerCountryFlags.LOGGER.error("Received something that's not JSON");
+				return null;
+			}
+
 			if (jsonElement.isJsonObject()) {
 				return new LocationInfo((JsonObject) jsonElement);
 			} else {

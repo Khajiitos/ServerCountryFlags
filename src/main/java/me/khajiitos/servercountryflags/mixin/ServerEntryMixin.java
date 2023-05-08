@@ -135,7 +135,7 @@ public class ServerEntryMixin {
                 if (Config.showDistance) {
                     double distanceFromLocal = locationInfo.getDistanceFromLocal(Config.useKm);
                     if (distanceFromLocal != -1.0) {
-                        toolTipList.add(Compatibility.translatableText("locationInfo.distance", (int)distanceFromLocal, Compatibility.translatableText(Config.useKm ? "locationInfo.km" : "locationInfo.mi"))/*.formatted(Formatting.ITALIC)*/);
+                        toolTipList.add(Compatibility.formatted(Compatibility.translatableText("locationInfo.distance", (int)distanceFromLocal, Compatibility.translatableText(Config.useKm ? "locationInfo.km" : "locationInfo.mi")), Formatting.ITALIC));
                     }
                 }
             }
