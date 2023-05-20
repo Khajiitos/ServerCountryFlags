@@ -1,4 +1,6 @@
-package me.khajiitos.servercountryflags;
+package me.khajiitos.servercountryflags.util;
+
+import me.khajiitos.servercountryflags.ServerCountryFlags;
 
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -9,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class NetworkChangeDetector {
-    private static HashMap<NetworkInterface, List<InterfaceAddress>> previousInterfaces = new HashMap<>();
+    private static final HashMap<NetworkInterface, List<InterfaceAddress>> previousInterfaces = new HashMap<>();
 
     public static boolean check() {
         boolean changed = false;

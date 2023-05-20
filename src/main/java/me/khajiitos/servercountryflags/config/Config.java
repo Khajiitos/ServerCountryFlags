@@ -1,5 +1,7 @@
-package me.khajiitos.servercountryflags;
+package me.khajiitos.servercountryflags.config;
 
+import me.khajiitos.servercountryflags.ServerCountryFlags;
+import me.khajiitos.servercountryflags.util.Compatibility;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;

@@ -1,4 +1,4 @@
-package me.khajiitos.servercountryflags;
+package me.khajiitos.servercountryflags.config;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

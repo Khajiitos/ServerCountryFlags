@@ -2,6 +2,10 @@ package me.khajiitos.servercountryflags;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import me.khajiitos.servercountryflags.config.Config;
+import me.khajiitos.servercountryflags.util.Compatibility;
+import me.khajiitos.servercountryflags.util.LocationInfo;
+import me.khajiitos.servercountryflags.util.NetworkChangeDetector;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.Address;

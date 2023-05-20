@@ -5,7 +5,7 @@
   "name": "Server Country Flags",
   "description": "Shows the flag of where a server is located.",
   "authors": ["Khajiitos"],
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/servercountryflags/icon.png",
   "environment": "client",
   "contact": {

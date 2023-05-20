@@ -1,6 +1,11 @@
-package me.khajiitos.servercountryflags;
+package me.khajiitos.servercountryflags.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import me.khajiitos.servercountryflags.ServerCountryFlags;
+import me.khajiitos.servercountryflags.config.Config;
+import me.khajiitos.servercountryflags.util.Compatibility;
+import me.khajiitos.servercountryflags.util.LocationInfo;
+import me.khajiitos.servercountryflags.util.NetworkChangeDetector;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
@@ -24,7 +29,7 @@ public class ServerMapScreen extends Screen {
 
     private int mapStartX, mapStartY, mapWidth, mapHeight;
     private final Screen parent;
-    private ArrayList<Point> points = new ArrayList<>();
+    private final ArrayList<Point> points = new ArrayList<>();
 
     private double zoomedAreaStartX = 0.0;
     private double zoomedAreaStartY = 0.0;
@@ -156,9 +161,7 @@ public class ServerMapScreen extends Screen {
             }
         }));
 
-        this.addDrawableChild(Compatibility.buttonWidget(this.width / 2 + 5, this.height - 26, 100, 20, Compatibility.translatableText("gui.back"), (button) -> {
-            Compatibility.setScreen(this.parent);
-        }));
+        this.addDrawableChild(Compatibility.buttonWidget(this.width / 2 + 5, this.height - 26, 100, 20, Compatibility.translatableText("gui.back"), (button) -> Compatibility.setScreen(this.parent)));
     }
 
     @Override
@@ -317,7 +320,7 @@ public class ServerMapScreen extends Screen {
         }
     }
 
-    public class Coordinates {
+    public static class Coordinates {
         public int x, y;
 
         public Coordinates(int x, int y) {

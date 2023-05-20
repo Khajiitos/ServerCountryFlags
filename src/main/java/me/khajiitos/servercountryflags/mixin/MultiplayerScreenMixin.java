@@ -1,6 +1,10 @@
 package me.khajiitos.servercountryflags.mixin;
 
-import me.khajiitos.servercountryflags.*;
+import me.khajiitos.servercountryflags.ServerCountryFlags;
+import me.khajiitos.servercountryflags.config.Config;
+import me.khajiitos.servercountryflags.screen.ServerMapScreen;
+import me.khajiitos.servercountryflags.util.Compatibility;
+import me.khajiitos.servercountryflags.util.NetworkChangeDetector;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;

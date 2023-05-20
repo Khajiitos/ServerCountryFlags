@@ -1,10 +1,10 @@
 package me.khajiitos.servercountryflags.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import me.khajiitos.servercountryflags.Compatibility;
-import me.khajiitos.servercountryflags.Config;
-import me.khajiitos.servercountryflags.LocationInfo;
 import me.khajiitos.servercountryflags.ServerCountryFlags;
+import me.khajiitos.servercountryflags.config.Config;
+import me.khajiitos.servercountryflags.util.Compatibility;
+import me.khajiitos.servercountryflags.util.LocationInfo;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;

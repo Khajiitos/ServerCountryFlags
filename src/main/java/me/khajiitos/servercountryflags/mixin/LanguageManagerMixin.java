@@ -1,7 +1,7 @@
 package me.khajiitos.servercountryflags.mixin;
 
-import me.khajiitos.servercountryflags.Compatibility;
 import me.khajiitos.servercountryflags.ServerCountryFlags;
+import me.khajiitos.servercountryflags.util.Compatibility;
 import net.minecraft.client.resource.language.LanguageManager;
 import net.minecraft.resource.ResourceManager;
 import org.spongepowered.asm.mixin.Mixin;

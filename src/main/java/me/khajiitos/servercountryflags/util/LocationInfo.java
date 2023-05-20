@@ -1,6 +1,7 @@
-package me.khajiitos.servercountryflags;
+package me.khajiitos.servercountryflags.util;
 
 import com.google.gson.JsonObject;
+import me.khajiitos.servercountryflags.ServerCountryFlags;
 
 import java.util.List;
 
@@ -55,13 +56,11 @@ public class LocationInfo {
             return -1.0;
 
         double theta = local.longitude - this.longitude;
-        double distance =
-            Math.toDegrees(Math.acos(
-                    Math.sin(Math.toRadians(local.latitude)) * Math.sin(Math.toRadians(this.latitude))
-                    + Math.cos(Math.toRadians(local.latitude)) * Math.cos(Math.toRadians(this.latitude))
-                    * Math.cos(Math.toRadians(theta))
-            )) * 69.09; // nice
-        return distance;
+        return Math.toDegrees(Math.acos(
+                Math.sin(Math.toRadians(local.latitude)) * Math.sin(Math.toRadians(this.latitude))
+                + Math.cos(Math.toRadians(local.latitude)) * Math.cos(Math.toRadians(this.latitude))
+                * Math.cos(Math.toRadians(theta))
+        )) * 69.09;
     }
 
     public double getDistanceFromLocal(boolean inKm) {
