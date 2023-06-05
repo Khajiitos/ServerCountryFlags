@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -132,7 +133,7 @@ public class ServerCountryFlags implements ClientModInitializer {
 			URLConnection con = apiUrl.openConnection();
 			con.setConnectTimeout(3000);
 
-			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
 			JsonElement jsonElement = Compatibility.parseReaderToJson(reader);
 
 			if (jsonElement == null) {

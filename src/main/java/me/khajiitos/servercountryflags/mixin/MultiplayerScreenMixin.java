@@ -54,7 +54,7 @@ public class MultiplayerScreenMixin extends Screen {
         updateServers();
 
         if (Config.mapButton) {
-            int posX = this.width / 2 + 159;
+            int posX = this.width / 2 + (Config.mapButtonRight ? 159 : -179);
             int posY = this.height - 28;
             if (ServerCountryFlags.isNewerThan1_19_3) {
                 // Minecraft 1.19.4 slightly changed the positions of buttons in the Multiplayer Screen

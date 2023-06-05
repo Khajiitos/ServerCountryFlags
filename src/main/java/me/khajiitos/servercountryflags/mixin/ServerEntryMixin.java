@@ -42,7 +42,6 @@ public class ServerEntryMixin {
     @Inject(at = @At("HEAD"), method = "render")
     public void renderHead(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo info) {
         if (!ServerCountryFlags.flagAspectRatiosLoaded) {
-            ServerCountryFlags.LOGGER.error("In the server list before the flags were loaded?");
             return;
         }
 

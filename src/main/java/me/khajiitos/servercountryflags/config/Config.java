@@ -51,6 +51,9 @@ public class Config {
     @ConfigEntry(description = "Shows a map button in the server list which opens the server map")
     public static boolean mapButton = true;
 
+    @ConfigEntry(description = "Decides whether the map button should be on the right side or the left side")
+    public static boolean mapButtonRight = true;
+
     @ConfigEntry(description = "Shows your location on the server map too")
     public static boolean showHomeOnMap = true;
 

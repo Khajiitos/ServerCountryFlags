@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
-import net.minecraft.GameVersion;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
@@ -161,7 +160,7 @@ public class Compatibility {
             String getGameVersionName = resolver.mapMethodName("intermediary", "net.minecraft.class_155", "method_16673", "()Lcom/mojang/bridge/game/GameVersion;");
             getGameVersionMethod = SharedConstants.class.getMethod(getGameVersionName);
 
-            for (Method method : GameVersion.class.getMethods()) {
+            for (Method method : getGameVersionMethod.invoke(null).getClass().getMethods()) {
                 // Since we don't have any mapping for getBuildTime(),
                 // we're going to find it this way
                 if (method.getReturnType() == Date.class) {
@@ -287,20 +286,19 @@ public class Compatibility {
         // in older versions it takes a Predicate<String>
         ResourceManager manager = MinecraftClient.getInstance().getResourceManager();
 
-        if (oldFindResourcesMethod == null) {
-            System.out.println("new find resources");
-            System.out.println("old find resources: " + oldFindResourcesMethod);
+        if (newFindResourcesMethod != null) {
             try {
                 Predicate<Identifier> identifierPredicate = (path) -> true;
                 Map<Identifier, Resource> result = (Map<Identifier, Resource>) newFindResourcesMethod.invoke(manager, startingPath, identifierPredicate);
                 return result.keySet();
             } catch (ReflectiveOperationException ignored) {}
-        } else {
-            System.out.println("old find resources");
+        }
+
+        if (oldFindResourcesMethod != null) {
             try {
                 Predicate<String> stringPredicate = (path) -> true;
                 return (Collection<Identifier>) oldFindResourcesMethod.invoke(manager, startingPath, stringPredicate);
-            } catch (ReflectiveOperationException ignored) {ignored.printStackTrace();}
+            } catch (ReflectiveOperationException ignored) {}
         }
         return null;
     }
@@ -311,12 +309,16 @@ public class Compatibility {
         // Also, in newer versions Resource is a class, and in older versions it's an interface
         ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
 
-        if (oldGetResourceMethod == null) {
+        if (newGetResourceMethod != null) {
             try {
-                Optional<Object> optional = (Optional<Object>) newGetResourceMethod.invoke(resourceManager, identifier);
-                return optional.orElse(null);
+                Object result = newGetResourceMethod.invoke(resourceManager, identifier);
+                if (result instanceof Optional<?> optional) {
+                    return optional.orElse(null);
+                }
             } catch (ReflectiveOperationException ignored) {}
-        } else {
+        }
+
+        if (oldGetResourceMethod != null) {
             try {
                 return oldGetResourceMethod.invoke(resourceManager, identifier);
             } catch (ReflectiveOperationException ignored) {}
@@ -339,7 +341,7 @@ public class Compatibility {
         // In newer versions in gson (in 1.18+), to parse a json object from a reader
         // you use a static method JsonParser.parseReader, and in older
         // versions you use the parse(Reader) method from an instance of this class
-        if (parseMethod != null) {
+        if (parseReaderMethod != null) {
             try {
                 return (JsonElement) parseReaderMethod.invoke(null, reader);
             } catch (ReflectiveOperationException ignored) {}
