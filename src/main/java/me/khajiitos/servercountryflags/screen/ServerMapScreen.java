@@ -3,12 +3,13 @@ package me.khajiitos.servercountryflags.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.khajiitos.servercountryflags.ServerCountryFlags;
 import me.khajiitos.servercountryflags.config.Config;
-import me.khajiitos.servercountryflags.util.Compatibility;
 import me.khajiitos.servercountryflags.util.LocationInfo;
 import me.khajiitos.servercountryflags.util.NetworkChangeDetector;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -41,7 +42,7 @@ public class ServerMapScreen extends Screen {
     private double movingMapLastY = -1.0;
 
     public ServerMapScreen(Screen parent) {
-        super(Compatibility.translatableText("servermap.title"));
+        super(Text.translatable("servermap.title"));
         this.parent = parent;
 
         if (Config.showHomeOnMap && ServerCountryFlags.localLocation != null) {
@@ -135,41 +136,48 @@ public class ServerMapScreen extends Screen {
 
     @Override
     public void init() {
-        this.addDrawableChild(Compatibility.buttonWidget(this.width / 2 - 105, this.height - 26, 100, 20, Compatibility.translatableText("selectServer.refresh"), (button) -> {
-            this.clearChildren();
-            this.init();
 
-            if (ServerCountryFlags.serverList == null) {
-                return;
-            }
+        this.addDrawableChild(new ButtonWidget.Builder(
+                Text.translatable("selectServer.refresh"),
+                (button) -> {
+                    this.clearChildren();
+                    this.init();
 
-            if (Config.reloadOnRefresh) {
-                points.clear();
-                ServerCountryFlags.servers.clear();
-                ServerCountryFlags.localLocation = null;
-            }
+                    if (ServerCountryFlags.serverList == null) {
+                        return;
+                    }
 
-            if (ServerCountryFlags.localLocation == null || NetworkChangeDetector.check()) {
-                ServerCountryFlags.updateLocalLocationInfo();
-            }
+                    if (Config.reloadOnRefresh) {
+                        points.clear();
+                        ServerCountryFlags.servers.clear();
+                        ServerCountryFlags.localLocation = null;
+                    }
 
-            for (int i = 0; i < ServerCountryFlags.serverList.size(); i++) {
-                if (ServerCountryFlags.servers.containsKey(ServerCountryFlags.serverList.get(i).address)) {
-                    continue;
+                    if (ServerCountryFlags.localLocation == null || NetworkChangeDetector.check()) {
+                        ServerCountryFlags.updateLocalLocationInfo();
+                    }
+
+                    for (int i = 0; i < ServerCountryFlags.serverList.size(); i++) {
+                        if (ServerCountryFlags.servers.containsKey(ServerCountryFlags.serverList.get(i).address)) {
+                            continue;
+                        }
+                        ServerCountryFlags.updateServerLocationInfo(ServerCountryFlags.serverList.get(i).address);
+                    }
                 }
-                ServerCountryFlags.updateServerLocationInfo(ServerCountryFlags.serverList.get(i).address);
-            }
-        }));
+        ).dimensions(this.width / 2 - 105, this.height - 26, 100, 20).build());
 
-        this.addDrawableChild(Compatibility.buttonWidget(this.width / 2 + 5, this.height - 26, 100, 20, Compatibility.translatableText("gui.back"), (button) -> Compatibility.setScreen(this.parent)));
+        this.addDrawableChild(new ButtonWidget.Builder(
+                Text.translatable("gui.back"),
+                (button) -> MinecraftClient.getInstance().setScreen(this.parent)
+        ).dimensions(this.width / 2 + 5, this.height - 26, 100, 20).build());
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        this.renderBackground(matrices);
-        super.render(matrices, mouseX, mouseY, delta);
-        DrawableHelper.drawCenteredTextWithShadow(matrices, this.textRenderer, this.getTitle().asOrderedText(), this.width / 2, 12, 0xFFFFFFFF);
-        DrawableHelper.fill(matrices, 0, 32, this.width, this.height - 32, 0xAA000000);
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        this.renderBackground(context);
+        super.render(context, mouseX, mouseY, delta);
+        context.drawCenteredTextWithShadow(this.textRenderer, this.getTitle().asOrderedText(), this.width / 2, 12, 0xFFFFFFFF);
+        context.fill(0, 32, this.width, this.height - 32, 0xAA000000);
 
         mapHeight = this.height - 64;
         mapWidth = (int)(mapHeight * MAP_TEXTURE_ASPECT);
@@ -182,10 +190,11 @@ public class ServerMapScreen extends Screen {
         mapStartX = this.width / 2 - mapWidth / 2;
         mapStartY = 32 + ((this.height - 64) / 2 - mapHeight / 2);
 
-        RenderSystem.setShaderTexture(0, MAP_TEXTURE);
+        // TODO: this doesn't seem to work anymore
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-        DrawableHelper.drawTexture(matrices, mapStartX, mapStartY, mapWidth, mapHeight, (float)(mapWidth * zoomedAreaStartX), (float)(mapHeight * zoomedAreaStartY), (int)(mapWidth * zoomedAreaWidth), (int)(mapHeight * zoomedAreaHeight), mapWidth, mapHeight);
+
+        context.drawTexture(MAP_TEXTURE, mapStartX, mapStartY, mapWidth, mapHeight, (float)(mapWidth * zoomedAreaStartX), (float)(mapHeight * zoomedAreaStartY), (int)(mapWidth * zoomedAreaWidth), (int)(mapHeight * zoomedAreaHeight), mapWidth, mapHeight);
         Point hoveredPoint = null;
 
         int pointHeight = mapHeight / 20;
@@ -207,23 +216,18 @@ public class ServerMapScreen extends Screen {
         }
 
         for (Point point : this.points) {
-            point.render(matrices, hoveredPoint == point);
+            point.render(context, hoveredPoint == point);
         }
 
         if (hoveredPoint != null) {
-            this.renderTooltip(matrices, hoveredPoint.getTooltip(), mouseX, mouseY);
+            this.setTooltip(hoveredPoint.getTooltip());
         }
 
         RenderSystem.disableBlend();
     }
 
-    // In 1.19, the close function is called close(), and in older versions it's called onClose()
     public void close() {
-        Compatibility.setScreen(this.parent);
-    }
-
-    public void onClose() {
-        Compatibility.setScreen(this.parent);
+        MinecraftClient.getInstance().setScreen(this.parent);
     }
 
     @Override
@@ -271,23 +275,23 @@ public class ServerMapScreen extends Screen {
             locationInfos.add(new NamedLocationInfo(name, info));
         }
 
-        public List<Text> getTooltip() {
-            List<Text> list = new ArrayList<>();
+        public List<OrderedText> getTooltip() {
+            List<OrderedText> list = new ArrayList<>();
             for (NamedLocationInfo info : locationInfos) {
                 if (!list.isEmpty()) {
-                    list.add(Text.of(""));
+                    list.add(Text.of("").asOrderedText());
                 }
                 if (info.name == null) {
-                    list.add(Compatibility.formatted(Compatibility.translatableText("servermap.home"), Formatting.BOLD));
+                    list.add(Text.translatable("servermap.home").formatted(Formatting.BOLD).asOrderedText());
                 } else {
-                    list.add(Compatibility.formatted(Compatibility.literalText(info.name), Formatting.BOLD));
-                    list.add(Compatibility.literalText((Config.showDistrict && !info.locationInfo.districtName.equals("") ? (info.locationInfo.districtName + ", ") : "") + info.locationInfo.cityName + ", " + info.locationInfo.countryName));
+                    list.add(Text.literal(info.name).formatted(Formatting.BOLD).asOrderedText());
+                    list.add(Text.literal((Config.showDistrict && !info.locationInfo.districtName.equals("") ? (info.locationInfo.districtName + ", ") : "") + info.locationInfo.cityName + ", " + info.locationInfo.countryName).asOrderedText());
                 }
             }
             return list;
         }
 
-        private void render(MatrixStack matrices, boolean hovered) {
+        private void render(DrawContext context, boolean hovered) {
             Coordinates coords = latlonToPos(this.lat, this.lon, mapWidth, mapHeight);
             int pointHeight = mapHeight / 20;
             int pointWidth = (int)(pointHeight * POINT_TEXTURE_ASPECT);
@@ -305,8 +309,7 @@ public class ServerMapScreen extends Screen {
                 texture = POINT_HOVERED_TEXTURE;
             }
 
-            RenderSystem.setShaderTexture(0, texture);
-            DrawableHelper.drawTexture(matrices, pointStartX, pointStartY, 0, 0, pointWidth, pointHeight, pointWidth, pointHeight);
+            context.drawTexture(texture, pointStartX, pointStartY, 0, 0, pointWidth, pointHeight, pointWidth, pointHeight);
         }
 
         public class NamedLocationInfo {

@@ -3,8 +3,8 @@ package me.khajiitos.servercountryflags.mixin;
 import me.khajiitos.servercountryflags.ServerCountryFlags;
 import me.khajiitos.servercountryflags.config.Config;
 import me.khajiitos.servercountryflags.screen.ServerMapScreen;
-import me.khajiitos.servercountryflags.util.Compatibility;
 import me.khajiitos.servercountryflags.util.NetworkChangeDetector;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
@@ -55,12 +55,8 @@ public class MultiplayerScreenMixin extends Screen {
 
         if (Config.mapButton) {
             int posX = this.width / 2 + (Config.mapButtonRight ? 159 : -179);
-            int posY = this.height - 28;
-            if (ServerCountryFlags.isNewerThan1_19_3) {
-                // Minecraft 1.19.4 slightly changed the positions of buttons in the Multiplayer Screen
-                posY = this.height - 30;
-            }
-            this.addDrawableChild(new TexturedButtonWidget(posX, posY, 20, 20, 0, 0, 20, MAP_BUTTON_TEXTURE, 20, 40, (button) -> Compatibility.setScreen(new ServerMapScreen(this))));
+            int posY = this.height - 30;
+            this.addDrawableChild(new TexturedButtonWidget(posX, posY, 20, 20, 0, 0, 20, MAP_BUTTON_TEXTURE, 20, 40, (button) -> MinecraftClient.getInstance().setScreen(new ServerMapScreen(this))));
         }
     }
 }

@@ -32,7 +32,7 @@ public class LocationInfo {
             return;
         }
 
-        if (Compatibility.jsonObjectContainsAllFields(apiObject, List.of("country", "countryCode", "city", "lon", "lat", "district", "isp"))) {
+        if (apiObject.keySet().containsAll(List.of("country", "countryCode", "city", "lon", "lat", "district", "isp"))) {
             this.countryName = apiObject.get("country").getAsString();
             this.countryCode = apiObject.get("countryCode").getAsString().toLowerCase();
             this.cityName = apiObject.get("city").getAsString();

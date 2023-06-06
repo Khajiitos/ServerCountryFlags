@@ -3,14 +3,12 @@ package me.khajiitos.servercountryflags.mixin;
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.khajiitos.servercountryflags.ServerCountryFlags;
 import me.khajiitos.servercountryflags.config.Config;
-import me.khajiitos.servercountryflags.util.Compatibility;
 import me.khajiitos.servercountryflags.util.LocationInfo;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -40,7 +38,7 @@ public class ServerEntryMixin {
     private static String originalName;
 
     @Inject(at = @At("HEAD"), method = "render")
-    public void renderHead(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo info) {
+    public void renderHead(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo info) {
         if (!ServerCountryFlags.flagAspectRatiosLoaded) {
             return;
         }
@@ -52,7 +50,7 @@ public class ServerEntryMixin {
     }
 
     @Inject(at = @At("TAIL"), method = "render")
-    public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo info) {
+    public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo info) {
         if (!ServerCountryFlags.flagAspectRatiosLoaded) {
             return;
         }
@@ -72,7 +70,7 @@ public class ServerEntryMixin {
         } else if (!Config.displayUnknownFlag) {
             if (Config.flagPosition.equalsIgnoreCase("behindname")) {
                 this.server.name = originalName;
-                MinecraftClient.getInstance().textRenderer.draw(matrices, this.server.name, (float)(x + 35), (float)(y + 1), 16777215);
+                context.drawText(MinecraftClient.getInstance().textRenderer, this.server.name, x + 35, y + 1, 16777215, false);
             }
             return;
         }
@@ -97,7 +95,7 @@ public class ServerEntryMixin {
                 startingX = x + 35;
                 startingY = y + 1;
                 this.server.name = originalName;
-                MinecraftClient.getInstance().textRenderer.draw(matrices, this.server.name, (float)(startingX + width + 3), (float)(y + 1), 16777215);
+                context.drawText(MinecraftClient.getInstance().textRenderer, this.server.name, startingX + width + 3, y + 1, 16777215, false);
             }
             default -> {
                 startingX = x + entryWidth - width - 6;
@@ -115,30 +113,29 @@ public class ServerEntryMixin {
 
         Identifier textureId = new Identifier(ServerCountryFlags.MOD_ID, "textures/flags/" + countryCode + ".png");
 
-        RenderSystem.setShaderTexture(0, textureId);
         RenderSystem.enableBlend();
-        DrawableHelper.drawTexture(matrices, startingX, startingY, 0.0F, 0.0F, width, height, width, height);
+        context.drawTexture(textureId, startingX, startingY, 0.0F, 0.0F, width, height, width, height);
         if (Config.flagBorder) {
             final int color = (Config.borderR << 16) | (Config.borderG << 8) | Config.borderB | (Config.borderA << 24);
-            Compatibility.drawBorder(matrices, startingX - 1, startingY - 1, width + 2, height + 2, color);
+            context.drawBorder(startingX - 1, startingY - 1, width + 2, height + 2, color);
         }
         RenderSystem.disableBlend();
         if (mouseX >= startingX && mouseX <= startingX + width && mouseY >= startingY && mouseY <= startingY + height) {
             List<Text> toolTipList = new ArrayList<>();
 
-            toolTipList.add(toolTip != null ? Compatibility.literalText(toolTip) : Compatibility.translatableText("locationInfo.unknown"));
+            toolTipList.add(toolTip != null ? Text.literal(toolTip) : Text.translatable("locationInfo.unknown"));
             if (locationInfo != null) {
                 if (Config.showISP && !locationInfo.ispName.equals("")) {
-                    toolTipList.add(Compatibility.translatableText("locationInfo.isp", locationInfo.ispName));
+                    toolTipList.add(Text.translatable("locationInfo.isp", locationInfo.ispName));
                 }
                 if (Config.showDistance) {
                     double distanceFromLocal = locationInfo.getDistanceFromLocal(Config.useKm);
                     if (distanceFromLocal != -1.0) {
-                        toolTipList.add(Compatibility.formatted(Compatibility.translatableText("locationInfo.distance", (int)distanceFromLocal, Compatibility.translatableText(Config.useKm ? "locationInfo.km" : "locationInfo.mi")), Formatting.ITALIC));
+                        toolTipList.add(Text.translatable("locationInfo.distance", (int)distanceFromLocal, Text.translatable(Config.useKm ? "locationInfo.km" : "locationInfo.mi")).formatted(Formatting.ITALIC));
                     }
                 }
             }
-            Compatibility.setMultiplayerScreenTooltip(screen, toolTipList);
+            screen.setMultiplayerScreenTooltip(toolTipList);
         }
     }
 }

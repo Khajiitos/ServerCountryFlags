@@ -1,7 +1,6 @@
 package me.khajiitos.servercountryflags.config;
 
 import me.khajiitos.servercountryflags.ServerCountryFlags;
-import me.khajiitos.servercountryflags.util.Compatibility;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
@@ -140,7 +139,8 @@ public class Config {
         if (forceEnglish) {
             ServerCountryFlags.updateAPILanguage(null);
         } else if (MinecraftClient.getInstance().getLanguageManager() != null) {
-            ServerCountryFlags.updateAPILanguage(Compatibility.getLanguageCode());
+
+            ServerCountryFlags.updateAPILanguage(MinecraftClient.getInstance().getLanguageManager().getLanguage());
         }
 
         // So that the map button appears/disappears without having to reopen the screen
