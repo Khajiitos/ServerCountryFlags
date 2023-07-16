@@ -1,0 +1,26 @@
+modLoader = "javafml"
+loaderVersion = "${loader_version_range}"
+license = "MIT"
+
+[[mods]]
+modId = "servercountryflags"
+version = "${version}"
+logoFile="assets/servercountryflags/logo.png"
+displayName = "Server Country Flags"
+authors = "Khajiitos"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/server-country-flags"
+description = '''Shows the flag of where a server is located.'''
+
+[[dependencies.servercountryflags]]
+modId = "forge"
+mandatory = true
+versionRange = "${forge_version_range}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.servercountryflags]]
+modId = "minecraft"
+mandatory = true
+versionRange = "${minecraft_version_range}"
+ordering = "NONE"
+side = "BOTH"

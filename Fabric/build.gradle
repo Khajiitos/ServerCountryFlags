@@ -1,0 +1,52 @@
+plugins {
+    id 'fabric-loom' version '1.2-SNAPSHOT'
+    id 'maven-publish'
+}
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+base {
+    archivesName = mod_id + "-" + mod_version + "-" + minecraft_version_group + "-FABRIC";
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+
+    modImplementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    implementation project(":Common")
+}
+
+processResources {
+    from project(":Common").sourceSets.main.resources
+
+    filteringCharset "UTF-8"
+
+    inputs.property "version", mod_version
+    inputs.property "minecraft_version", minecraft_version
+
+    filesMatching("fabric.mod.json") {
+        expand  "version": mod_version,
+                "minecraft_version": minecraft_version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    source(project(":Common").sourceSets.main.allSource)
+
+    it.options.encoding = "UTF-8"
+}
+
+tasks.withType(Javadoc).configureEach {
+    source(project(":Common").sourceSets.main.allJava)
+}
+
+// Ideally this project would use Gradle from the root project
+tasks.register('wrapper', Wrapper) {
+    gradleVersion = '8.1.1'
+}
+
+jar.finalizedBy('remapJar')
