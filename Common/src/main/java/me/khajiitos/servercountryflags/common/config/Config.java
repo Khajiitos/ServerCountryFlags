@@ -4,6 +4,7 @@ import me.khajiitos.servercountryflags.common.ServerCountryFlags;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
+import net.minecraft.client.resources.language.LanguageManager;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -139,7 +140,12 @@ public class Config {
         if (forceEnglish) {
             ServerCountryFlags.updateAPILanguage(null);
         } else {
-            ServerCountryFlags.updateAPILanguage(Minecraft.getInstance().getLanguageManager().getSelected());
+            LanguageManager languageManager = Minecraft.getInstance().getLanguageManager();
+            // IntelliJ claims that languageManager will never be null
+            // but that's actually not the case
+            if (languageManager != null) {
+                ServerCountryFlags.updateAPILanguage(languageManager.getSelected());
+            }
         }
 
         // So that the map button appears/disappears without having to reopen the screen

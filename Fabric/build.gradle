@@ -11,11 +11,8 @@ base {
 }
 
 loom {
-    // TODO: this is only a temporary fix
-    // there is "servercountryflags-1.7.0-1.20.x-FABRIC-refmap.json"
-    // For now, we're adding a normally named refmap just to make it work
     mixin {
-        add sourceSets.main, "${mod_id}.refmap.json"
+        defaultRefmapName = "${mod_id}.refmap.json"
     }
 }
 
