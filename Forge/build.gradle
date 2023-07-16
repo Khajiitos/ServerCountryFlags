@@ -106,7 +106,7 @@ processResources {
     inputs.property "forge_version_range", forge_version_range
     inputs.property "minecraft_version_range", forge_minecraft_version_range
 
-    filesMatching("mods.toml") {
+    filesMatching("META-INF/mods.toml") {
         expand  version: mod_version,
                 loader_version_range: forge_loader_version_range,
                 forge_version_range: forge_version_range,
