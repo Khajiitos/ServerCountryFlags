@@ -140,10 +140,6 @@ tasks.register('wrapper', Wrapper) {
     gradleVersion = '8.1.1'
 }
 
-jar {
-    archiveClassifier = minecraft_version_group + '-FORGE'
-}
-
 // Register dummy ideaSyncTask so that Gradle doesn't complain
 // but why does it complain here and not in the Fabric project?
 tasks.register('ideaSyncTask', {})
