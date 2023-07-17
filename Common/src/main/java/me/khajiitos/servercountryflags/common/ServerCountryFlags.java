@@ -52,23 +52,22 @@ public class ServerCountryFlags {
 		NetworkChangeDetector.check();
 		Minecraft.getInstance().execute(() -> {
 			ResourceManager resourceManager =  Minecraft.getInstance().getResourceManager();
-			Map<ResourceLocation, Resource> resourceLocations = resourceManager.listResources("textures/flags", path -> true);
+			Collection<ResourceLocation> resourceLocations = resourceManager.listResources("textures/flags", path -> path.endsWith(".png"));
 
 			Thread flagThread = new Thread(() -> {
-				for (Map.Entry<ResourceLocation, Resource> entry : resourceLocations.entrySet()) {
-					if (!entry.getKey().getNamespace().equals(MOD_ID))
+				for (ResourceLocation resourceLocation : resourceLocations) {
+					if (!resourceLocation.getNamespace().equals(MOD_ID))
 						continue;
+
 					try {
-						if (entry.getValue() == null) {
-							ServerCountryFlags.LOGGER.error("Failed to load resource " + entry.getKey().getPath());
-							continue;
+						Resource resource = resourceManager.getResource(resourceLocation);
+						try (NativeImage image = NativeImage.read(resource.getInputStream())) {
+							String code = last(resourceLocation.getPath().split("/"));
+							code = code.substring(0, code.length() - 4);
+							flagAspectRatios.put(code, (float)image.getWidth() / (float)image.getHeight());
 						}
-						NativeImage image = NativeImage.read(entry.getValue().open());
-						String code = last(entry.getKey().getPath().split("/"));
-						code = code.substring(0, code.length() - 4);
-						flagAspectRatios.put(code, (float)image.getWidth() / (float)image.getHeight());
 					} catch (IOException e) {
-						LOGGER.error(e.getMessage());
+						LOGGER.error("Failed to load resource", e);
 					}
 				}
 				flagAspectRatiosLoaded = true;

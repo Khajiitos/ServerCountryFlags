@@ -147,7 +147,7 @@ public class Config {
             // IntelliJ claims that languageManager will never be null
             // but that's actually not the case
             if (languageManager != null) {
-                ServerCountryFlags.updateAPILanguage(languageManager.getSelected());
+                ServerCountryFlags.updateAPILanguage(languageManager.getSelected().getName());
             }
         }
 

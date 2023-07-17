@@ -12,8 +12,11 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -43,7 +46,7 @@ public class ServerMapScreen extends Screen {
     private double movingMapLastY = -1.0;
 
     public ServerMapScreen(Screen parent) {
-        super(Component.translatable("servermap.title"));
+        super(new TranslatableComponent("servermap.title"));
         this.parent = parent;
 
         if (Config.showHomeOnMap && ServerCountryFlags.localLocation != null) {
@@ -138,8 +141,9 @@ public class ServerMapScreen extends Screen {
     @Override
     public void init() {
 
-        this.addRenderableWidget(new Button.Builder(
-                Component.translatable("selectServer.refresh"),
+        this.addRenderableWidget(new Button(
+                this.width / 2 - 105, this.height - 26, 100, 20,
+                new TranslatableComponent("selectServer.refresh"),
                 (button) -> {
                     this.clearWidgets();
                     this.init();
@@ -165,16 +169,17 @@ public class ServerMapScreen extends Screen {
                         ServerCountryFlags.updateServerLocationInfo(ServerCountryFlags.serverList.get(i).ip);
                     }
                 }
-        ).bounds(this.width / 2 - 105, this.height - 26, 100, 20).build());
+        ));
 
-        this.addRenderableWidget(new Button.Builder(
-                Component.translatable("gui.back"),
+        this.addRenderableWidget(new Button(
+                this.width / 2 + 5, this.height - 26, 100, 20,
+                new TranslatableComponent("gui.back"),
                 (button) -> Minecraft.getInstance().setScreen(this.parent)
-        ).bounds(this.width / 2 + 5, this.height - 26, 100, 20).build());
+        ));
     }
 
     @Override
-    public void render(PoseStack poseStack, int mouseX, int mouseY, float delta) {
+    public void render(@NotNull PoseStack poseStack, int mouseX, int mouseY, float delta) {
         this.renderBackground(poseStack);
         super.render(poseStack, mouseX, mouseY, delta);
         Gui.drawCenteredString(poseStack, this.font, this.getTitle().getVisualOrderText(), this.width / 2, 12, 0xFFFFFFFF);
@@ -221,7 +226,7 @@ public class ServerMapScreen extends Screen {
         }
 
         if (hoveredPoint != null) {
-            this.setTooltipForNextRenderPass(hoveredPoint.getTooltip());
+            this.renderTooltip(poseStack, hoveredPoint.getTooltip(), mouseX, mouseY);
         }
 
         RenderSystem.disableBlend();
@@ -283,10 +288,10 @@ public class ServerMapScreen extends Screen {
                     list.add(Component.nullToEmpty("").getVisualOrderText());
                 }
                 if (info.name == null) {
-                    list.add(Component.translatable("servermap.home").withStyle(ChatFormatting.BOLD).getVisualOrderText());
+                    list.add(new TranslatableComponent("servermap.home").withStyle(ChatFormatting.BOLD).getVisualOrderText());
                 } else {
-                    list.add(Component.literal(info.name).withStyle(ChatFormatting.BOLD).getVisualOrderText());
-                    list.add(Component.literal((Config.showDistrict && !info.locationInfo.districtName.equals("") ? (info.locationInfo.districtName + ", ") : "") + info.locationInfo.cityName + ", " + info.locationInfo.countryName).getVisualOrderText());
+                    list.add(new TextComponent(info.name).withStyle(ChatFormatting.BOLD).getVisualOrderText());
+                    list.add(new TextComponent((Config.showDistrict && !info.locationInfo.districtName.equals("") ? (info.locationInfo.districtName + ", ") : "") + info.locationInfo.cityName + ", " + info.locationInfo.countryName).getVisualOrderText());
                 }
             }
             return list;
