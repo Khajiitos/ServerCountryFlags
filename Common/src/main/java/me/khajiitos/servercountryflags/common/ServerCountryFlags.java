@@ -132,7 +132,7 @@ public class ServerCountryFlags {
 			con.setConnectTimeout(3000);
 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
-			JsonElement jsonElement = JsonParser.parseReader(reader);
+			JsonElement jsonElement = new JsonParser().parse(reader);
 
 			if (jsonElement == null) {
 				ServerCountryFlags.LOGGER.error("Received something that's not JSON");

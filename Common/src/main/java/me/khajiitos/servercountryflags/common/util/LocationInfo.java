@@ -1,9 +1,11 @@
 package me.khajiitos.servercountryflags.common.util;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.khajiitos.servercountryflags.common.ServerCountryFlags;
 
 import java.util.List;
+import java.util.Map;
 
 public class LocationInfo {
     private static final double MILE_KM_RATIO = 1.609344;
@@ -18,6 +20,15 @@ public class LocationInfo {
     public double longitude = -1.0;
     private double distanceFromLocal = -1.0; // in miles
 
+    private boolean objectContainsAll(JsonObject object, List<String> keys) {
+        for (String key : keys) {
+            if (!object.has(key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public LocationInfo(JsonObject apiObject) {
         if (apiObject.has("status")) {
             success = apiObject.get("status").getAsString().equals("success");
@@ -31,8 +42,7 @@ public class LocationInfo {
             ServerCountryFlags.LOGGER.error(apiObject.toString());
             return;
         }
-
-        if (apiObject.keySet().containsAll(List.of("country", "countryCode", "city", "lon", "lat", "district", "isp"))) {
+        if (objectContainsAll(apiObject, List.of("country", "countryCode", "city", "lon", "lat", "district", "isp"))) {
             this.countryName = apiObject.get("country").getAsString();
             this.countryCode = apiObject.get("countryCode").getAsString().toLowerCase();
             this.cityName = apiObject.get("city").getAsString();
