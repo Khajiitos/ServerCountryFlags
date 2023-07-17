@@ -60,6 +60,9 @@ public class Config {
     @ConfigEntry(description = "Changes the flags' positions. Available options: default, left, right, behindName")
     public static String flagPosition = "behindName";
 
+    @ConfigEntry(description = "Uses the redirected IP (if present) instead of just the resolved IP")
+    public static boolean resolveRedirects = true;
+
     private static File configDirectory;
     private static File propertiesFile;
     private static WatchService watchService;

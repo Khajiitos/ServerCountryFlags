@@ -33,10 +33,12 @@ processResources {
 
     inputs.property "version", mod_version
     inputs.property "minecraft_version", minecraft_version
+    inputs.property "minecraft_version_range", fabric_minecraft_version_range
 
     filesMatching("fabric.mod.json") {
         expand  "version": mod_version,
-                "minecraft_version": minecraft_version
+                "minecraft_version": minecraft_version,
+                "minecraft_version_range": fabric_minecraft_version_range
     }
 }
 

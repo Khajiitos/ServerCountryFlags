@@ -161,11 +161,13 @@ public class ServerCountryFlags {
 			Optional<ResolvedServerAddress> optional = ServerAddressResolver.SYSTEM.resolve(parsedAddress);
 			if (optional.isPresent()) {
 				InetSocketAddress address = optional.get().asInetSocketAddress();
-				Optional<ServerAddress> redirect = redirectResolver.lookupRedirect(parsedAddress);
-				if (redirect.isPresent()) {
-					Optional<ResolvedServerAddress> resolved = ServerAddressResolver.SYSTEM.resolve(redirect.get());
-					if (resolved.isPresent()) {
-						address = resolved.get().asInetSocketAddress();
+				if (Config.resolveRedirects) {
+					Optional<ServerAddress> redirect = redirectResolver.lookupRedirect(parsedAddress);
+					if (redirect.isPresent()) {
+						Optional<ResolvedServerAddress> resolved = ServerAddressResolver.SYSTEM.resolve(redirect.get());
+						if (resolved.isPresent()) {
+							address = resolved.get().asInetSocketAddress();
+						}
 					}
 				}
 				LocationInfo locationInfo = getServerLocationInfo(address.getAddress().getHostAddress());
