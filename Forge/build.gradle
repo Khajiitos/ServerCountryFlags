@@ -12,7 +12,7 @@ buildscript {
 
 plugins {
     id 'idea'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'net.minecraftforge.gradle' version '5.1.+'
 }
 
 apply plugin: 'org.spongepowered.mixin'
@@ -27,7 +27,7 @@ base {
 minecraft {
     mappings channel: "official", version: minecraft_version
 
-    copyIdeResources = true
+    //copyIdeResources = true
 
     runs {
         client {
@@ -137,7 +137,7 @@ tasks.withType(Javadoc).configureEach {
 
 // Ideally this project would use Gradle from the root project
 tasks.register('wrapper', Wrapper) {
-    gradleVersion = '8.1.1'
+    gradleVersion = '7.6.2'
 }
 
 // Register dummy ideaSyncTask so that Gradle doesn't complain

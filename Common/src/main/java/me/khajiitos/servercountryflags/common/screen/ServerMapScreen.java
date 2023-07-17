@@ -1,19 +1,19 @@
 package me.khajiitos.servercountryflags.common.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import me.khajiitos.servercountryflags.common.ServerCountryFlags;
 import me.khajiitos.servercountryflags.common.config.Config;
 import me.khajiitos.servercountryflags.common.util.LocationInfo;
 import me.khajiitos.servercountryflags.common.util.NetworkChangeDetector;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -174,11 +174,11 @@ public class ServerMapScreen extends Screen {
     }
 
     @Override
-    public void render(@NotNull GuiGraphics context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
-        super.render(context, mouseX, mouseY, delta);
-        context.drawCenteredString(this.font, this.getTitle().getVisualOrderText(), this.width / 2, 12, 0xFFFFFFFF);
-        context.fill(0, 32, this.width, this.height - 32, 0xAA000000);
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float delta) {
+        this.renderBackground(poseStack);
+        super.render(poseStack, mouseX, mouseY, delta);
+        Gui.drawCenteredString(poseStack, this.font, this.getTitle().getVisualOrderText(), this.width / 2, 12, 0xFFFFFFFF);
+        Gui.fill(poseStack, 0, 32, this.width, this.height - 32, 0xAA000000);
 
         mapHeight = this.height - 64;
         mapWidth = (int)(mapHeight * MAP_TEXTURE_ASPECT);
@@ -191,11 +191,11 @@ public class ServerMapScreen extends Screen {
         mapStartX = this.width / 2 - mapWidth / 2;
         mapStartY = 32 + ((this.height - 64) / 2 - mapHeight / 2);
 
-        // TODO: this doesn't seem to work anymore
+        RenderSystem.setShaderTexture(0, MAP_TEXTURE);
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 
-        context.blit(MAP_TEXTURE, mapStartX, mapStartY, mapWidth, mapHeight, (float)(mapWidth * zoomedAreaStartX), (float)(mapHeight * zoomedAreaStartY), (int)(mapWidth * zoomedAreaWidth), (int)(mapHeight * zoomedAreaHeight), mapWidth, mapHeight);
+        blit(poseStack, mapStartX, mapStartY, mapWidth, mapHeight, (float)(mapWidth * zoomedAreaStartX), (float)(mapHeight * zoomedAreaStartY), (int)(mapWidth * zoomedAreaWidth), (int)(mapHeight * zoomedAreaHeight), mapWidth, mapHeight);
         Point hoveredPoint = null;
 
         int pointHeight = mapHeight / 20;
@@ -217,7 +217,7 @@ public class ServerMapScreen extends Screen {
         }
 
         for (Point point : this.points) {
-            point.render(context, hoveredPoint == point);
+            point.render(poseStack, hoveredPoint == point);
         }
 
         if (hoveredPoint != null) {
@@ -292,7 +292,7 @@ public class ServerMapScreen extends Screen {
             return list;
         }
 
-        private void render(GuiGraphics context, boolean hovered) {
+        private void render(PoseStack poseStack, boolean hovered) {
             Coordinates coords = latlonToPos(this.lat, this.lon, mapWidth, mapHeight);
             int pointHeight = mapHeight / 20;
             int pointWidth = (int)(pointHeight * POINT_TEXTURE_ASPECT);
@@ -310,7 +310,8 @@ public class ServerMapScreen extends Screen {
                 texture = POINT_HOVERED_TEXTURE;
             }
 
-            context.blit(texture, pointStartX, pointStartY, 0, 0, pointWidth, pointHeight, pointWidth, pointHeight);
+            RenderSystem.setShaderTexture(0, texture);
+            blit(poseStack, pointStartX, pointStartY, 0, 0, pointWidth, pointHeight, pointWidth, pointHeight);
         }
 
         public class NamedLocationInfo {

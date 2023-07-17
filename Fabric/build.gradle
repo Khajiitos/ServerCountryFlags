@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.2-SNAPSHOT'
+    id 'fabric-loom' version '1.1-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -54,7 +54,7 @@ tasks.withType(Javadoc).configureEach {
 
 // Ideally this project would use Gradle from the root project
 tasks.register('wrapper', Wrapper) {
-    gradleVersion = '8.1.1'
+    gradleVersion = '7.6.2'
 }
 
 jar.finalizedBy('remapJar')
