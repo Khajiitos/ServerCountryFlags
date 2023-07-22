@@ -1,35 +1,34 @@
-package me.khajiitos.servercountryflags.common;
+package me.khajiitos.servercountryflags.fabric;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.NativeImage;
-import me.khajiitos.servercountryflags.common.config.Config;
-import me.khajiitos.servercountryflags.common.util.LocationInfo;
-import me.khajiitos.servercountryflags.common.util.NetworkChangeDetector;
+import me.khajiitos.servercountryflags.fabric.config.Config;
+import me.khajiitos.servercountryflags.fabric.util.LocationInfo;
+import me.khajiitos.servercountryflags.fabric.util.NetworkChangeDetector;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerAddress;
 import net.minecraft.client.multiplayer.ServerList;
-import net.minecraft.client.multiplayer.resolver.ResolvedServerAddress;
-import net.minecraft.client.multiplayer.resolver.ServerAddress;
-import net.minecraft.client.multiplayer.resolver.ServerAddressResolver;
-import net.minecraft.client.multiplayer.resolver.ServerRedirectHandler;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
 
 public class ServerCountryFlags {
 	public static final String MOD_ID = "servercountryflags";
-	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+	public static final Logger LOGGER = Logger.getLogger(MOD_ID);
 	public static final String API_NAME = "http://ip-api.com/json/";
 	public static final int API_FIELDS = 541395;
 	public static String apiLanguage = null;
@@ -38,8 +37,6 @@ public class ServerCountryFlags {
 	public static HashMap<String, LocationInfo> servers = new HashMap<>(); // Servers' flags
 	public static HashMap<String, Float> flagAspectRatios = new HashMap<>();
 	public static boolean flagAspectRatiosLoaded = false;
-	public static ServerRedirectHandler redirectResolver = ServerRedirectHandler.createDnsSrvRedirectHandler();
-
 	public static LocationInfo localLocation = null;
 
 	static <T>
@@ -67,7 +64,8 @@ public class ServerCountryFlags {
 							flagAspectRatios.put(code, (float)image.getWidth() / (float)image.getHeight());
 						}
 					} catch (IOException e) {
-						LOGGER.error("Failed to load resource", e);
+						LOGGER.severe("Failed to load resource");
+						e.printStackTrace();
 					}
 				}
 				flagAspectRatiosLoaded = true;
@@ -135,41 +133,30 @@ public class ServerCountryFlags {
 			JsonElement jsonElement = new JsonParser().parse(reader);
 
 			if (jsonElement == null) {
-				ServerCountryFlags.LOGGER.error("Received something that's not JSON");
+				ServerCountryFlags.LOGGER.severe("Received something that's not JSON");
 				return null;
 			}
 
 			if (jsonElement.isJsonObject()) {
 				return new LocationInfo((JsonObject) jsonElement);
 			} else {
-				ServerCountryFlags.LOGGER.error("Received JSON element, but it's not an object: " + jsonElement);
+				ServerCountryFlags.LOGGER.severe("Received JSON element, but it's not an object: " + jsonElement);
 			}
 		} catch (MalformedURLException e) {
-			ServerCountryFlags.LOGGER.error("Malformed API Url: " + apiUrlStr);
+			ServerCountryFlags.LOGGER.severe("Malformed API Url: " + apiUrlStr);
 		} catch (UnknownHostException e) {
-			ServerCountryFlags.LOGGER.error("Unknown host - no internet?");
+			ServerCountryFlags.LOGGER.severe("Unknown host - no internet?");
 		} catch (IOException e) {
-			ServerCountryFlags.LOGGER.error(e.getMessage());
+			ServerCountryFlags.LOGGER.severe(e.getMessage());
 		}
 		return null;
 	}
 
 	public static void updateServerLocationInfo(String serverAddress) {
 		CompletableFuture.runAsync(() -> {
-			ServerAddress parsedAddress = ServerAddress.parseString(serverAddress);
-			Optional<ResolvedServerAddress> optional = ServerAddressResolver.SYSTEM.resolve(parsedAddress);
-			if (optional.isPresent()) {
-				InetSocketAddress address = optional.get().asInetSocketAddress();
-				if (Config.resolveRedirects) {
-					Optional<ServerAddress> redirect = redirectResolver.lookupRedirect(parsedAddress);
-					if (redirect.isPresent()) {
-						Optional<ResolvedServerAddress> resolved = ServerAddressResolver.SYSTEM.resolve(redirect.get());
-						if (resolved.isPresent()) {
-							address = resolved.get().asInetSocketAddress();
-						}
-					}
-				}
-				LocationInfo locationInfo = getServerLocationInfo(address.getAddress().getHostAddress());
+			ServerAddress address = ServerAddress.parseString(serverAddress);
+			if (address != null) {
+				LocationInfo locationInfo = getServerLocationInfo(address.getHost());
 				if (locationInfo != null && locationInfo.success) {
 					servers.put(serverAddress, locationInfo);
 				}

@@ -1,6 +1,6 @@
-package me.khajiitos.servercountryflags.common.util;
+package me.khajiitos.servercountryflags.forge.util;
 
-import me.khajiitos.servercountryflags.common.ServerCountryFlags;
+import me.khajiitos.servercountryflags.forge.ServerCountryFlags;
 
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -43,7 +43,7 @@ public class NetworkChangeDetector {
                 }
             }
         } catch (SocketException e) {
-            ServerCountryFlags.LOGGER.warn("SocketException while checking network interfaces");
+            ServerCountryFlags.LOGGER.warning("SocketException while checking network interfaces");
         }
         return changed;
     }

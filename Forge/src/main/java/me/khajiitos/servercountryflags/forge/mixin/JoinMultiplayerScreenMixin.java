@@ -1,30 +1,30 @@
-package me.khajiitos.servercountryflags.common.mixin;
+package me.khajiitos.servercountryflags.forge.mixin;
 
-import me.khajiitos.servercountryflags.common.ServerCountryFlags;
-import me.khajiitos.servercountryflags.common.config.Config;
-import me.khajiitos.servercountryflags.common.screen.ServerMapScreen;
-import me.khajiitos.servercountryflags.common.util.NetworkChangeDetector;
+import me.khajiitos.servercountryflags.forge.ServerCountryFlags;
+import me.khajiitos.servercountryflags.forge.config.Config;
+import me.khajiitos.servercountryflags.forge.screen.ServerMapScreen;
+import me.khajiitos.servercountryflags.forge.util.NetworkChangeDetector;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
+import net.minecraft.client.gui.screen.MultiplayerScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.button.ImageButton;
 import net.minecraft.client.multiplayer.ServerList;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(JoinMultiplayerScreen.class)
+@Mixin(MultiplayerScreen.class)
 public class JoinMultiplayerScreenMixin extends Screen {
     private static final ResourceLocation MAP_BUTTON_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/misc/map_button.png");
 
     @Shadow
     private ServerList servers;
 
-    private JoinMultiplayerScreenMixin(Component title) {
+    private JoinMultiplayerScreenMixin(TextComponent title) {
         super(title);
     }
 
@@ -53,7 +53,7 @@ public class JoinMultiplayerScreenMixin extends Screen {
         if (Config.mapButton) {
             int posX = this.width / 2 + (Config.mapButtonRight ? 159 : -179);
             int posY = this.height - 28;
-            this.addRenderableWidget(new ImageButton(posX, posY, 20, 20, 0, 0, 20, MAP_BUTTON_TEXTURE, 20, 40, (button) -> Minecraft.getInstance().setScreen(new ServerMapScreen(this))));
+            this.addButton(new ImageButton(posX, posY, 20, 20, 0, 0, 20, MAP_BUTTON_TEXTURE, 20, 40, (button) -> Minecraft.getInstance().setScreen(new ServerMapScreen(this))));
         }
     }
 }

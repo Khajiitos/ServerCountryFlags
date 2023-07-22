@@ -17,8 +17,8 @@ plugins {
 
 apply plugin: 'org.spongepowered.mixin'
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 base {
     archivesName = mod_id + "-" + mod_version + "-" + minecraft_version_group + "-FORGE";

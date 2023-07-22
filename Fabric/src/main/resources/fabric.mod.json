@@ -6,7 +6,7 @@
   "description": "Shows the flag of where a server is located.",
   "authors": ["Khajiitos"],
   "license": "MIT",
-  "icon": "assets/servercountryflags/icon.png",
+  "icon": "icon.png",
   "environment": "client",
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/server-country-flags",
@@ -25,6 +25,6 @@
     "fabricloader": ">=0.14.0",
     "fabric": "*",
     "minecraft": "${minecraft_version_range}",
-    "java": ">=17"
+    "java": ">=8"
   }
 }

@@ -5,7 +5,7 @@ license = "MIT"
 [[mods]]
 modId = "servercountryflags"
 version = "${version}"
-logoFile="assets/servercountryflags/icon.png"
+logoFile="icon.png"
 displayName = "Server Country Flags"
 authors = "Khajiitos"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/server-country-flags"

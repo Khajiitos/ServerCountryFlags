@@ -1,10 +1,10 @@
-package me.khajiitos.servercountryflags.common.config;
+package me.khajiitos.servercountryflags.forge.config;
 
-import me.khajiitos.servercountryflags.common.ServerCountryFlags;
+import me.khajiitos.servercountryflags.forge.ServerCountryFlags;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
-import net.minecraft.client.resources.language.LanguageManager;
+import net.minecraft.client.gui.screen.MultiplayerScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.resources.LanguageManager;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -60,9 +60,6 @@ public class Config {
     @ConfigEntry(description = "Changes the flags' positions. Available options: default, left, right, behindName")
     public static String flagPosition = "behindName";
 
-    @ConfigEntry(description = "Uses the redirected IP (if present) instead of just the resolved IP")
-    public static boolean resolveRedirects = true;
-
     private static File configDirectory;
     private static File propertiesFile;
     private static WatchService watchService;
@@ -87,16 +84,16 @@ public class Config {
             try {
                 boolean ignored = configDirectory.mkdirs();
                 if (!propertiesFile.createNewFile()) {
-                    ServerCountryFlags.LOGGER.warn("Our properties file actually exists... What?");
+                    ServerCountryFlags.LOGGER.warning("Our properties file actually exists... What?");
                 }
                 save();
             } catch (IOException ex) {
-                ServerCountryFlags.LOGGER.error("Couldn't create the properties file");
-                ServerCountryFlags.LOGGER.error(ex.getMessage());
+                ServerCountryFlags.LOGGER.severe("Couldn't create the properties file");
+                ServerCountryFlags.LOGGER.severe(ex.getMessage());
             }
         } catch (IOException e) {
-            ServerCountryFlags.LOGGER.error("Couldn't read the properties file");
-            ServerCountryFlags.LOGGER.error(e.getMessage());
+            ServerCountryFlags.LOGGER.severe("Couldn't read the properties file");
+            ServerCountryFlags.LOGGER.severe(e.getMessage());
         }
 
         if (!loadedProperties)
@@ -120,12 +117,12 @@ public class Config {
                         } else if (field.getType() == float.class) {
                             field.setFloat(null, Float.parseFloat(propertiesValue));
                         } else {
-                            ServerCountryFlags.LOGGER.warn("Bug: unsupported config type " + field.getType().getSimpleName());
+                            ServerCountryFlags.LOGGER.warning("Bug: unsupported config type " + field.getType().getSimpleName());
                         }
                     } catch (IllegalAccessException e) {
-                        ServerCountryFlags.LOGGER.warn("Bug: can't modify a config field");
+                        ServerCountryFlags.LOGGER.warning("Bug: can't modify a config field");
                     } catch (NumberFormatException e) {
-                        ServerCountryFlags.LOGGER.warn("Field " + field.getName() + " in the properties type is not of type " + field.getType().getSimpleName());
+                        ServerCountryFlags.LOGGER.warning("Field " + field.getName() + " in the properties type is not of type " + field.getType().getSimpleName());
                     }
                 }
             }
@@ -153,7 +150,7 @@ public class Config {
 
         // So that the map button appears/disappears without having to reopen the screen
         Screen screen = Minecraft.getInstance().screen;
-        if (screen instanceof JoinMultiplayerScreen) {
+        if (screen instanceof MultiplayerScreen) {
             screen.resize(Minecraft.getInstance(), screen.width, screen.height);
         }
     }
@@ -161,7 +158,7 @@ public class Config {
     public static void save() {
         Properties properties = new Properties();
 
-        StringBuilder fieldsDescriptions = new StringBuilder();
+        StringBuilder fieldsDescriptionsBuilder = new StringBuilder();
 
         for (Field field : Config.class.getDeclaredFields()) {
             ConfigEntry annotation = field.getAnnotation(ConfigEntry.class);
@@ -169,26 +166,27 @@ public class Config {
                 try {
                     String fieldName = annotation.name().equals("") ? field.getName() : annotation.name();
                     if (!annotation.description().equals("")) {
-                        fieldsDescriptions.append("\n").append(fieldName).append(" - ").append(annotation.description());
+                        fieldsDescriptionsBuilder.append("\n").append(fieldName).append(" - ").append(annotation.description());
                     }
                     properties.setProperty(fieldName, String.valueOf(field.get(null)));
                 } catch (IllegalAccessException e) {
-                    ServerCountryFlags.LOGGER.warn("Bug: can't access a config field");
+                    ServerCountryFlags.LOGGER.warning("Bug: can't access a config field");
                 }
             }
         }
 
         try {
             String comments = "Mod properties file";
+            String fieldsDescriptions = fieldsDescriptionsBuilder.toString();
             if (!fieldsDescriptions.isEmpty()) {
                 comments += "\nField descriptions:" + fieldsDescriptions;
             }
             properties.store(new FileOutputStream(propertiesFile), comments);
         } catch (FileNotFoundException e) {
-            ServerCountryFlags.LOGGER.error("Couldn't save the properties file because it doesn't exist");
+            ServerCountryFlags.LOGGER.severe("Couldn't save the properties file because it doesn't exist");
         } catch (IOException e) {
-            ServerCountryFlags.LOGGER.error("Couldn't save the properties file");
-            ServerCountryFlags.LOGGER.error(e.getMessage());
+            ServerCountryFlags.LOGGER.severe("Couldn't save the properties file");
+            ServerCountryFlags.LOGGER.severe(e.getMessage());
         }
     }
 
@@ -211,13 +209,13 @@ public class Config {
                         key.reset();
                     }
                 } catch (Exception e) {
-                    ServerCountryFlags.LOGGER.warn("WatchService closed");
+                    ServerCountryFlags.LOGGER.severe("WatchService closed");
                 }
             });
             watcherThread.setName("File watcher");
             watcherThread.start();
         } catch (IOException e) {
-            ServerCountryFlags.LOGGER.error("Couldn't initialize WatchService");
+            ServerCountryFlags.LOGGER.severe("Couldn't initialize WatchService");
         }
     }
 }

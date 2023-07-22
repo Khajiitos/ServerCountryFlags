@@ -1,11 +1,10 @@
-package me.khajiitos.servercountryflags.common.util;
+package me.khajiitos.servercountryflags.forge.util;
 
-import com.google.gson.JsonElement;
+import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonObject;
-import me.khajiitos.servercountryflags.common.ServerCountryFlags;
+import me.khajiitos.servercountryflags.forge.ServerCountryFlags;
 
 import java.util.List;
-import java.util.Map;
 
 public class LocationInfo {
     private static final double MILE_KM_RATIO = 1.609344;
@@ -33,16 +32,16 @@ public class LocationInfo {
         if (apiObject.has("status")) {
             success = apiObject.get("status").getAsString().equals("success");
             if (!success) {
-                ServerCountryFlags.LOGGER.error("API result isn't successful");
-                ServerCountryFlags.LOGGER.error(apiObject.toString());
+                ServerCountryFlags.LOGGER.severe("API result isn't successful");
+                ServerCountryFlags.LOGGER.severe(apiObject.toString());
                 return;
             }
         } else {
-            ServerCountryFlags.LOGGER.error("API Object doesn't include the field 'status'");
-            ServerCountryFlags.LOGGER.error(apiObject.toString());
+            ServerCountryFlags.LOGGER.severe("API Object doesn't include the field 'status'");
+            ServerCountryFlags.LOGGER.severe(apiObject.toString());
             return;
         }
-        if (objectContainsAll(apiObject, List.of("country", "countryCode", "city", "lon", "lat", "district", "isp"))) {
+        if (objectContainsAll(apiObject, ImmutableList.of("country", "countryCode", "city", "lon", "lat", "district", "isp"))) {
             this.countryName = apiObject.get("country").getAsString();
             this.countryCode = apiObject.get("countryCode").getAsString().toLowerCase();
             this.cityName = apiObject.get("city").getAsString();
@@ -53,8 +52,8 @@ public class LocationInfo {
             this.latitude = apiObject.get("lat").getAsDouble();
             this.distanceFromLocal = calculateDistanceFromLocal();
         } else {
-            ServerCountryFlags.LOGGER.error("API Object is incomplete");
-            ServerCountryFlags.LOGGER.error(apiObject.toString());
+            ServerCountryFlags.LOGGER.severe("API Object is incomplete");
+            ServerCountryFlags.LOGGER.severe(apiObject.toString());
             success = false;
         }
     }

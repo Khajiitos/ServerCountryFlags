@@ -1,11 +1,11 @@
-package me.khajiitos.servercountryflags.common.screen;
+package me.khajiitos.servercountryflags.fabric.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import me.khajiitos.servercountryflags.common.ServerCountryFlags;
-import me.khajiitos.servercountryflags.common.config.Config;
-import me.khajiitos.servercountryflags.common.util.LocationInfo;
-import me.khajiitos.servercountryflags.common.util.NetworkChangeDetector;
+import me.khajiitos.servercountryflags.fabric.ServerCountryFlags;
+import me.khajiitos.servercountryflags.fabric.config.Config;
+import me.khajiitos.servercountryflags.fabric.util.LocationInfo;
+import me.khajiitos.servercountryflags.fabric.util.NetworkChangeDetector;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -139,12 +139,12 @@ public class ServerMapScreen extends Screen {
 
     @Override
     public void init() {
-
-        this.addRenderableWidget(new Button(
+        this.addButton(new Button(
                 this.width / 2 - 105, this.height - 26, 100, 20,
                 new TranslatableComponent("selectServer.refresh"),
                 (button) -> {
-                    this.clearWidgets();
+                    this.buttons.clear();
+                    this.children.clear();
                     this.init();
 
                     if (ServerCountryFlags.serverList == null) {
@@ -170,7 +170,7 @@ public class ServerMapScreen extends Screen {
                 }
         ));
 
-        this.addRenderableWidget(new Button(
+        this.addButton(new Button(
                 this.width / 2 + 5, this.height - 26, 100, 20,
                 new TranslatableComponent("gui.back"),
                 (button) -> Minecraft.getInstance().setScreen(this.parent)
@@ -181,7 +181,7 @@ public class ServerMapScreen extends Screen {
     public void render(PoseStack poseStack, int mouseX, int mouseY, float delta) {
         this.renderBackground(poseStack);
         super.render(poseStack, mouseX, mouseY, delta);
-        Gui.drawCenteredString(poseStack, this.font, this.getTitle().getVisualOrderText(), this.width / 2, 12, 0xFFFFFFFF);
+        Gui.drawCenteredString(poseStack, this.font, this.getTitle(), this.width / 2, 12, 0xFFFFFFFF);
         Gui.fill(poseStack, 0, 32, this.width, this.height - 32, 0xAA000000);
 
         mapHeight = this.height - 64;
@@ -195,7 +195,8 @@ public class ServerMapScreen extends Screen {
         mapStartX = this.width / 2 - mapWidth / 2;
         mapStartY = 32 + ((this.height - 64) / 2 - mapHeight / 2);
 
-        RenderSystem.setShaderTexture(0, MAP_TEXTURE);
+        Minecraft.getInstance().getTextureManager().bind(MAP_TEXTURE);
+
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 
@@ -314,7 +315,7 @@ public class ServerMapScreen extends Screen {
                 texture = POINT_HOVERED_TEXTURE;
             }
 
-            RenderSystem.setShaderTexture(0, texture);
+            Minecraft.getInstance().getTextureManager().bind(texture);
             blit(poseStack, pointStartX, pointStartY, 0, 0, pointWidth, pointHeight, pointWidth, pointHeight);
         }
 
