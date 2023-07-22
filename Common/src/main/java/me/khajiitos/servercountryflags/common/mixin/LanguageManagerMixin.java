@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class LanguageManagerMixin {
     @Inject(at = @At("TAIL"), method = "onResourceManagerReload")
     public void onResourceManagerReload(ResourceManager manager, CallbackInfo info) {
-        ServerCountryFlags.updateAPILanguage(Minecraft.getInstance().getLanguageManager().getSelected());
+        ServerCountryFlags.updateAPILanguage(Minecraft.getInstance().getLanguageManager().getSelected().getCode());
     }
 }

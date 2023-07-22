@@ -138,7 +138,11 @@ public class ServerMapScreen extends Screen {
     @Override
     public void init() {
 
-        this.addRenderableWidget(new Button.Builder(
+        this.addRenderableWidget(new Button(
+                this.width / 2 - 105,
+                this.height - 26,
+                100,
+                20,
                 Component.translatable("selectServer.refresh"),
                 (button) -> {
                     this.clearWidgets();
@@ -165,12 +169,16 @@ public class ServerMapScreen extends Screen {
                         ServerCountryFlags.updateServerLocationInfo(ServerCountryFlags.serverList.get(i).ip);
                     }
                 }
-        ).bounds(this.width / 2 - 105, this.height - 26, 100, 20).build());
+        ));
 
-        this.addRenderableWidget(new Button.Builder(
+        this.addRenderableWidget(new Button(
+                this.width / 2 + 5,
+                this.height - 26,
+                100,
+                20,
                 Component.translatable("gui.back"),
                 (button) -> Minecraft.getInstance().setScreen(this.parent)
-        ).bounds(this.width / 2 + 5, this.height - 26, 100, 20).build());
+        ));
     }
 
     @Override
@@ -221,7 +229,7 @@ public class ServerMapScreen extends Screen {
         }
 
         if (hoveredPoint != null) {
-            this.setTooltipForNextRenderPass(hoveredPoint.getTooltip());
+            this.renderTooltip(poseStack, hoveredPoint.getTooltip(), mouseX, mouseY);
         }
 
         RenderSystem.disableBlend();
