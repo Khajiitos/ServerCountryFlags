@@ -102,26 +102,8 @@ public class ServerCountryFlags {
 		}
 	}
 
-	public static boolean isIpLocal(String ip) {
-		if (ip.isEmpty()) {
-			return true;
-		}
-		try {
-			int[] divided = Arrays.stream(ip.split("\\.")).mapToInt(Integer::parseInt).toArray();
-			if (divided.length != 4) {
-				return false;
-			}
-			return (divided[0] == 127 && divided[1] == 0 && divided[2] == 0 && divided[3] == 1) || (divided[0] == 192 && divided[1] == 168) || (divided[0] == 10) || (divided[0] == 172 && divided[1] >= 16 && divided[1] <= 31);
-		} catch (NumberFormatException e) {
-			return false;
-		}
-	}
-
 	public static LocationInfo getServerLocationInfo(String ip) {
-		// If the IP is local, make the API give us our location
-		if (isIpLocal(ip)) {
-			ip = "";
-		}
+		// If the IP is empty, the API will give us our location
 
 		String apiUrlStr = API_NAME + ip + "?fields=" + API_FIELDS;
 		if (apiLanguage != null) {
@@ -155,22 +137,27 @@ public class ServerCountryFlags {
 		return null;
 	}
 
+	public static boolean isIpLocal(InetAddress address) {
+		return address.isLoopbackAddress() || address.isLinkLocalAddress() || address.isSiteLocalAddress();
+	}
+
 	public static void updateServerLocationInfo(String serverAddress) {
 		CompletableFuture.runAsync(() -> {
-			ServerAddress parsedAddress = ServerAddress.parseString(serverAddress);
-			Optional<ResolvedServerAddress> optional = ServerAddressResolver.SYSTEM.resolve(parsedAddress);
-			if (optional.isPresent()) {
-				InetSocketAddress address = optional.get().asInetSocketAddress();
-				if (Config.resolveRedirects) {
-					Optional<ServerAddress> redirect = redirectResolver.lookupRedirect(parsedAddress);
-					if (redirect.isPresent()) {
-						Optional<ResolvedServerAddress> resolved = ServerAddressResolver.SYSTEM.resolve(redirect.get());
-						if (resolved.isPresent()) {
-							address = resolved.get().asInetSocketAddress();
-						}
-					}
+			ServerAddress address = ServerAddress.parseString(serverAddress);
+			if (Config.resolveRedirects) {
+				Optional<ServerAddress> redirect = redirectResolver.lookupRedirect(address);
+
+				if (redirect.isPresent()) {
+					address = redirect.get();
 				}
-				LocationInfo locationInfo = getServerLocationInfo(address.getAddress().getHostAddress());
+			}
+
+			Optional<ResolvedServerAddress> resolvedAddress = ServerAddressResolver.SYSTEM.resolve(address);
+			if (resolvedAddress.isPresent()) {
+				InetSocketAddress socketAddress = resolvedAddress.get().asInetSocketAddress();
+				String stringHostAddress = isIpLocal(socketAddress.getAddress()) ? "" : socketAddress.getAddress().getHostAddress();
+
+				LocationInfo locationInfo = getServerLocationInfo(stringHostAddress);
 				if (locationInfo != null && locationInfo.success) {
 					servers.put(serverAddress, locationInfo);
 				}

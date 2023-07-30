@@ -9,7 +9,7 @@
   "icon": "assets/servercountryflags/icon.png",
   "environment": "client",
   "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/server-country-flags",
+    "homepage": "https://github.com/Khajiitos/ServerCountryFlags",
     "sources": "https://github.com/Khajiitos/ServerCountryFlags",
     "issues": "https://github.com/Khajiitos/ServerCountryFlags/issues"
   },

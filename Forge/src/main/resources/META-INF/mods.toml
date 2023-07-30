@@ -1,6 +1,7 @@
 modLoader = "javafml"
 loaderVersion = "${loader_version_range}"
 license = "MIT"
+issueTrackerURL = "https://github.com/Khajiitos/ServerCountryFlags/issues"
 
 [[mods]]
 modId = "servercountryflags"
@@ -8,8 +9,9 @@ version = "${version}"
 logoFile="assets/servercountryflags/icon.png"
 displayName = "Server Country Flags"
 authors = "Khajiitos"
-displayURL="https://www.curseforge.com/minecraft/mc-mods/server-country-flags"
+displayURL="https://github.com/Khajiitos/ServerCountryFlags"
 description = '''Shows the flag of where a server is located.'''
+displayTest = "IGNORE_ALL_VERSION"
 
 [[dependencies.servercountryflags]]
 modId = "forge"
