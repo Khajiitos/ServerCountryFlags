@@ -6,7 +6,7 @@ issueTrackerURL = "https://github.com/Khajiitos/ServerCountryFlags/issues"
 [[mods]]
 modId = "servercountryflags"
 version = "${version}"
-logoFile="assets/servercountryflags/icon.png"
+logoFile="icon.png"
 displayName = "Server Country Flags"
 authors = "Khajiitos"
 displayURL="https://github.com/Khajiitos/ServerCountryFlags"
