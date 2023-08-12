@@ -21,7 +21,7 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 base {
-    archivesName = mod_id + "-" + mod_version + "-" + minecraft_version_group + "-FORGE";
+    archivesName = mod_id + "-" + mod_version + "-" + minecraft_version_group + "-FORGE"
 }
 
 minecraft {
@@ -52,9 +52,14 @@ mixin {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
+repositories {
+    maven { url "https://maven.shedaniel.me/" }
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    implementation fg.deobf("me.shedaniel.cloth:cloth-config-forge:${cloth_config_version}")
 
     implementation project(':Common')
 }

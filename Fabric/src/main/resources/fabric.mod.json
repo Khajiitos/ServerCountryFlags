@@ -6,7 +6,7 @@
   "description": "Shows the flag of where a server is located.",
   "authors": ["Khajiitos"],
   "license": "MIT",
-  "icon": "assets/servercountryflags/icon.png",
+  "icon": "icon.png",
   "environment": "client",
   "contact": {
     "homepage": "https://github.com/Khajiitos/ServerCountryFlags",
@@ -16,6 +16,9 @@
   "entrypoints": {
     "client": [
       "me.khajiitos.servercountryflags.fabric.ServerCountryFlagsFabric"
+    ],
+    "modmenu": [
+      "me.khajiitos.servercountryflags.fabric.ModMenuApiImpl"
     ]
   },
   "mixins": [

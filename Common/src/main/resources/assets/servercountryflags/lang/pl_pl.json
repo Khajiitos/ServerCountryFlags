@@ -1,5 +1,6 @@
 {
   "locationInfo.unknown": "(nieznana)",
+  "locationInfo.cooldown": "(API musi ochłonąć)",
   "locationInfo.distance": "≈ %d %s odległości",
   "locationInfo.km": "km",
   "locationInfo.mi": "mi",

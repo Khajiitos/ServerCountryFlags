@@ -30,7 +30,7 @@ public class JoinMultiplayerScreenMixin extends Screen {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     public void constructor(CallbackInfo info) {
-        if (Config.reloadOnRefresh) {
+        if (Config.cfg.reloadOnRefresh) {
             ServerCountryFlags.servers.clear();
             ServerCountryFlags.localLocation = null;
         }
@@ -50,10 +50,10 @@ public class JoinMultiplayerScreenMixin extends Screen {
             }
         }
 
-        if (Config.mapButton) {
-            int posX = this.width / 2 + (Config.mapButtonRight ? 159 : -179);
+        if (Config.cfg.mapButton) {
+            int posX = this.width / 2 + (Config.cfg.mapButtonRight ? 159 : -179);
             int posY = this.height - 30;
-            this.addRenderableWidget(new ImageButton(posX, posY, 20, 20, 0, 0, 20, MAP_BUTTON_TEXTURE, 20, 40, (button) -> Minecraft.getInstance().setScreen(new ServerMapScreen(this))));
+            this.addRenderableWidget(new ImageButton(posX, posY, 20, 20, Minecraft.getInstance().options.highContrast().get() ? 20 : 0, 0, 20, MAP_BUTTON_TEXTURE, 40, 40, (button) -> Minecraft.getInstance().setScreen(new ServerMapScreen(this))));
         }
     }
 }

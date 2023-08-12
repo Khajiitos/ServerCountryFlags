@@ -12,60 +12,71 @@ import java.nio.file.*;
 import java.util.Properties;
 
 public class Config {
-    @ConfigEntry(description = "Displays a border around flags")
-    public static boolean flagBorder = true;
+    public static class Values {
+        @ConfigEntry(name = "Flag border", description = "Displays a border around flags")
+        public boolean flagBorder = true;
 
-    @ConfigEntry(description = "Red channel value for the border color around flags")
-    public static int borderR = 65;
+        @ConfigEntry(name = "Border color R", description = "Red channel value for the border color around flags")
+        public int borderR = 65;
 
-    @ConfigEntry(description = "Green channel value for the border color around flags")
-    public static int borderG = 65;
+        @ConfigEntry(name = "Border color G", description = "Green channel value for the border color around flags")
+        public int borderG = 65;
 
-    @ConfigEntry(description = "Blue channel value for the border color around flags")
-    public static int borderB = 65;
+        @ConfigEntry(name = "Border color B", description = "Blue channel value for the border color around flags")
+        public int borderB = 65;
 
-    @ConfigEntry(description = "Alpha channel value for the border color around flags")
-    public static int borderA = 255;
+        @ConfigEntry(name = "Border color A", description = "Alpha channel value for the border color around flags")
+        public int borderA = 255;
 
-    @ConfigEntry(description = "Forces flags to be reloaded when the server list is refreshed")
-    public static boolean reloadOnRefresh = false;
+        @ConfigEntry(name = "Reload on refresh", description = "Forces flags to be reloaded when the server list is refreshed")
+        public boolean reloadOnRefresh = false;
 
-    @ConfigEntry(description = "Shows the approximate distance between the server and you when you hover over a flag")
-    public static boolean showDistance = true;
+        @ConfigEntry(name = "Show distance", description = "Shows the approximate distance between the server and you when you hover over a flag")
+        public boolean showDistance = true;
 
-    @ConfigEntry(description = "Uses kilometers instead of miles")
-    public static boolean useKm = true;
+        @ConfigEntry(name = "Use kilometers", description = "Uses kilometers instead of miles")
+        public boolean useKm = true;
 
-    @ConfigEntry(description = "Forces the API results to be in English instead of your in-game language")
-    public static boolean forceEnglish = false;
+        @ConfigEntry(name = "Force English", description = "Forces the API results to be in English instead of your in-game language")
+        public boolean forceEnglish = false;
 
-    @ConfigEntry(description = "Displays the unknown flag when we don't have data about the server yet")
-    public static boolean displayUnknownFlag = true;
+        @ConfigEntry(name = "Display unknown flag", description = "Displays the unknown flag when we don't have data about the server yet")
+        public boolean displayUnknownFlag = true;
 
-    @ConfigEntry(description = "Shows the district of the location too, if available")
-    public static boolean showDistrict = false;
+        @ConfigEntry(name = "Display cooldown flag", description = "Displays a timeout flag when we have an API cooldown")
+        public boolean displayCooldownFlag = true;
 
-    @ConfigEntry(description = "Shows the ISP of the host, if available")
-    public static boolean showISP = false;
+        @ConfigEntry(name = "Show district", description = "Shows the district of the location too, if available")
+        public boolean showDistrict = false;
 
-    @ConfigEntry(description = "Shows a map button in the server list which opens the server map")
-    public static boolean mapButton = true;
+        @ConfigEntry(name = "Show ISP", description = "Shows the ISP of the host, if available")
+        public boolean showISP = false;
 
-    @ConfigEntry(description = "Decides whether the map button should be on the right side or the left side")
-    public static boolean mapButtonRight = true;
+        @ConfigEntry(name = "Map button", description = "Shows a map button in the server list which opens the server map")
+        public boolean mapButton = true;
 
-    @ConfigEntry(description = "Shows your location on the server map too")
-    public static boolean showHomeOnMap = true;
+        @ConfigEntry(name = "Map button on the right side", description = "Decides whether the map button should be on the right side or the left side")
+        public boolean mapButtonRight = true;
 
-    @ConfigEntry(description = "Changes the flags' positions. Available options: default, left, right, behindName")
-    public static String flagPosition = "behindName";
+        @ConfigEntry(name = "Show home on map", description = "Shows your location on the server map too")
+        public boolean showHomeOnMap = true;
 
-    @ConfigEntry(description = "Uses the redirected IP (if present) instead of just the resolved IP")
-    public static boolean resolveRedirects = true;
+        @ConfigEntry(name = "Resolve SRV redirects", description = "Uses the redirected IP (if present) instead of just the resolved IP")
+        public boolean resolveRedirects = true;
+
+        @ConfigEntry(name = "Flag position", description = "Changes the flags' positions. Available options: default, left, right, behindName", stringValues = {"default", "left", "right", "behindName"})
+        public String flagPosition = "behindName";
+    }
 
     private static File configDirectory;
     private static File propertiesFile;
     private static WatchService watchService;
+
+    // DO NOT TOUCH
+    public static final Config.Values DEFAULT = new Config.Values();
+
+    // but feel free to touch this one :)
+    public static final Config.Values cfg = new Config.Values();
 
     public static void init() {
         String minecraftDir = Minecraft.getInstance().gameDirectory.getAbsolutePath();
@@ -103,22 +114,22 @@ public class Config {
             return;
 
         boolean rewriteConfig = false;
-        for (Field field : Config.class.getDeclaredFields()) {
+        for (Field field : Config.Values.class.getDeclaredFields()) {
             ConfigEntry annotation = field.getAnnotation(ConfigEntry.class);
             if (annotation != null) {
-                String propertiesValue = properties.getProperty(annotation.name().equals("") ? field.getName() : annotation.name());
+                String propertiesValue = properties.getProperty(field.getName());
                 if (propertiesValue == null) {
                     rewriteConfig = true;
                 } else {
                     try {
                         if (field.getType() == String.class) {
-                            field.set(null, propertiesValue);
+                            field.set(cfg, propertiesValue);
                         } else if (field.getType() == boolean.class) {
-                            field.setBoolean(null, Boolean.parseBoolean(propertiesValue));
+                            field.setBoolean(cfg, Boolean.parseBoolean(propertiesValue));
                         } else if (field.getType() == int.class) {
-                            field.setInt(null, Integer.parseInt(propertiesValue));
+                            field.setInt(cfg, Integer.parseInt(propertiesValue));
                         } else if (field.getType() == float.class) {
-                            field.setFloat(null, Float.parseFloat(propertiesValue));
+                            field.setFloat(cfg, Float.parseFloat(propertiesValue));
                         } else {
                             ServerCountryFlags.LOGGER.warn("Bug: unsupported config type " + field.getType().getSimpleName());
                         }
@@ -140,7 +151,7 @@ public class Config {
     }
 
     private static void afterLoad() {
-        if (forceEnglish) {
+        if (cfg.forceEnglish) {
             ServerCountryFlags.updateAPILanguage(null);
         } else {
             LanguageManager languageManager = Minecraft.getInstance().getLanguageManager();
@@ -163,15 +174,15 @@ public class Config {
 
         StringBuilder fieldsDescriptions = new StringBuilder();
 
-        for (Field field : Config.class.getDeclaredFields()) {
+        for (Field field : Config.Values.class.getDeclaredFields()) {
             ConfigEntry annotation = field.getAnnotation(ConfigEntry.class);
             if (annotation != null) {
                 try {
-                    String fieldName = annotation.name().equals("") ? field.getName() : annotation.name();
+                    String fieldName = field.getName();
                     if (!annotation.description().equals("")) {
                         fieldsDescriptions.append("\n").append(fieldName).append(" - ").append(annotation.description());
                     }
-                    properties.setProperty(fieldName, String.valueOf(field.get(null)));
+                    properties.setProperty(fieldName, String.valueOf(field.get(cfg)));
                 } catch (IllegalAccessException e) {
                     ServerCountryFlags.LOGGER.warn("Bug: can't access a config field");
                 }

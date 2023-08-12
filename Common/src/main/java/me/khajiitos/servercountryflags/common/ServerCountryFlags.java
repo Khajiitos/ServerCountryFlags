@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.NativeImage;
 import me.khajiitos.servercountryflags.common.config.Config;
+import me.khajiitos.servercountryflags.common.util.APIResponse;
 import me.khajiitos.servercountryflags.common.util.LocationInfo;
 import me.khajiitos.servercountryflags.common.util.NetworkChangeDetector;
 import net.minecraft.client.Minecraft;
@@ -16,15 +17,20 @@ import net.minecraft.client.multiplayer.resolver.ServerRedirectHandler;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class ServerCountryFlags {
@@ -35,7 +41,7 @@ public class ServerCountryFlags {
 	public static String apiLanguage = null;
 	public static ServerList serverList; // Servers from the server list
 
-	public static HashMap<String, LocationInfo> servers = new HashMap<>(); // Servers' flags
+	public static HashMap<String, APIResponse> servers = new HashMap<>(); // Servers' flags
 	public static HashMap<String, Float> flagAspectRatios = new HashMap<>();
 	public static boolean flagAspectRatiosLoaded = false;
 	public static ServerRedirectHandler redirectResolver = ServerRedirectHandler.createDnsSrvRedirectHandler();
@@ -56,17 +62,21 @@ public class ServerCountryFlags {
 
 			Thread flagThread = new Thread(() -> {
 				for (Map.Entry<ResourceLocation, Resource> entry : resourceLocations.entrySet()) {
-					if (!entry.getKey().getNamespace().equals(MOD_ID))
+					if (!entry.getKey().getNamespace().equals(MOD_ID)) {
 						continue;
+					}
 					try {
 						if (entry.getValue() == null) {
 							ServerCountryFlags.LOGGER.error("Failed to load resource " + entry.getKey().getPath());
 							continue;
 						}
-						NativeImage image = NativeImage.read(entry.getValue().open());
-						String code = last(entry.getKey().getPath().split("/"));
-						code = code.substring(0, code.length() - 4);
-						flagAspectRatios.put(code, (float)image.getWidth() / (float)image.getHeight());
+
+						try (InputStream inputStream = entry.getValue().open()) {
+							NativeImage image = NativeImage.read(inputStream);
+							String code = last(entry.getKey().getPath().split("/"));
+							code = code.substring(0, code.length() - 4);
+							flagAspectRatios.put(code, (float)image.getWidth() / (float)image.getHeight());
+						}
 					} catch (IOException e) {
 						LOGGER.error(e.getMessage());
 					}
@@ -83,7 +93,7 @@ public class ServerCountryFlags {
 	public static void updateAPILanguage(String language) {
 		final String oldApiLanguage = apiLanguage;
 
-		if (Config.forceEnglish) {
+		if (Config.cfg.forceEnglish) {
 			apiLanguage = null;
 		} else if (language != null) {
 			if (language.startsWith("en")) apiLanguage = null;
@@ -102,30 +112,46 @@ public class ServerCountryFlags {
 		}
 	}
 
-	public static LocationInfo getServerLocationInfo(String ip) {
+	public static @NotNull APIResponse getAPIResponse(String ip) {
 		// If the IP is empty, the API will give us our location
+
+		if (APITimeoutManager.isOnCooldown()) {
+			return new APIResponse(APIResponse.Status.COOLDOWN, null);
+		}
 
 		String apiUrlStr = API_NAME + ip + "?fields=" + API_FIELDS;
 		if (apiLanguage != null) {
 			apiUrlStr += "&lang=" + apiLanguage;
 		}
 		try {
+			APITimeoutManager.incrementRequestsSent();
 			URL apiUrl = new URL(apiUrlStr);
 			URLConnection con = apiUrl.openConnection();
 			con.setConnectTimeout(3000);
+
+			int requestsLeft = con.getHeaderFieldInt("X-Rl", -1);
+			int secondsLeft = con.getHeaderFieldInt("X-Ttl", -1);
+
+			APITimeoutManager.decrementRequestsSent();
+
+			if (requestsLeft != -1 && secondsLeft != -1) {
+				APITimeoutManager.setRequestsLeft(requestsLeft - APITimeoutManager.getRequestsSent());
+				APITimeoutManager.setSecondsLeftUntilReset(secondsLeft);
+			}
 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
 			JsonElement jsonElement = JsonParser.parseReader(reader);
 
 			if (jsonElement == null) {
 				ServerCountryFlags.LOGGER.error("Received something that's not JSON");
-				return null;
+				return new APIResponse(APIResponse.Status.UNKNOWN, null);
 			}
 
 			if (jsonElement.isJsonObject()) {
-				return new LocationInfo((JsonObject) jsonElement);
+				return new APIResponse(APIResponse.Status.SUCCESS, new LocationInfo((JsonObject) jsonElement));
 			} else {
 				ServerCountryFlags.LOGGER.error("Received JSON element, but it's not an object: " + jsonElement);
+				return new APIResponse(APIResponse.Status.UNKNOWN, null);
 			}
 		} catch (MalformedURLException e) {
 			ServerCountryFlags.LOGGER.error("Malformed API Url: " + apiUrlStr);
@@ -134,7 +160,8 @@ public class ServerCountryFlags {
 		} catch (IOException e) {
 			ServerCountryFlags.LOGGER.error(e.getMessage());
 		}
-		return null;
+		APITimeoutManager.decrementRequestsSent();
+		return new APIResponse(APIResponse.Status.UNKNOWN, null);
 	}
 
 	public static boolean isIpLocal(InetAddress address) {
@@ -144,7 +171,7 @@ public class ServerCountryFlags {
 	public static void updateServerLocationInfo(String serverAddress) {
 		CompletableFuture.runAsync(() -> {
 			ServerAddress address = ServerAddress.parseString(serverAddress);
-			if (Config.resolveRedirects) {
+			if (Config.cfg.resolveRedirects) {
 				Optional<ServerAddress> redirect = redirectResolver.lookupRedirect(address);
 
 				if (redirect.isPresent()) {
@@ -157,9 +184,10 @@ public class ServerCountryFlags {
 				InetSocketAddress socketAddress = resolvedAddress.get().asInetSocketAddress();
 				String stringHostAddress = isIpLocal(socketAddress.getAddress()) ? "" : socketAddress.getAddress().getHostAddress();
 
-				LocationInfo locationInfo = getServerLocationInfo(stringHostAddress);
-				if (locationInfo != null && locationInfo.success) {
-					servers.put(serverAddress, locationInfo);
+				APIResponse response = getAPIResponse(stringHostAddress);
+				APIResponse oldResponse = servers.get(serverAddress);
+				if (oldResponse == null || (oldResponse.unknown() || !response.unknown()) || (oldResponse.cooldown() && response.locationInfo() != null)) {
+					servers.putIfAbsent(serverAddress, response);
 				}
 			}
 		});
@@ -167,12 +195,14 @@ public class ServerCountryFlags {
 
 	public static void updateLocalLocationInfo() {
 		CompletableFuture.runAsync(() -> {
-			LocationInfo info = getServerLocationInfo("");
-			if (info != null && info.success) {
-				localLocation = info;
+			APIResponse response = getAPIResponse("");
+			if (response.locationInfo() != null) {
+				localLocation = response.locationInfo();
 
-				for (LocationInfo locationInfo : servers.values()) {
-					locationInfo.updateDistanceFromLocal();
+				for (APIResponse serverResponse : servers.values()) {
+					if (!serverResponse.cooldown()) {
+						serverResponse.locationInfo().updateDistanceFromLocal();
+					}
 				}
 			}
 		});

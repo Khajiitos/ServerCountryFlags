@@ -10,4 +10,5 @@ import java.lang.annotation.Target;
 public @interface ConfigEntry {
     String name() default "";
     String description() default "";
+    String[] stringValues() default {};
 }

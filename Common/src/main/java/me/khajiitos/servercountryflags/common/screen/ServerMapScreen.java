@@ -3,6 +3,7 @@ package me.khajiitos.servercountryflags.common.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.khajiitos.servercountryflags.common.ServerCountryFlags;
 import me.khajiitos.servercountryflags.common.config.Config;
+import me.khajiitos.servercountryflags.common.util.APIResponse;
 import me.khajiitos.servercountryflags.common.util.LocationInfo;
 import me.khajiitos.servercountryflags.common.util.NetworkChangeDetector;
 import net.minecraft.ChatFormatting;
@@ -46,18 +47,21 @@ public class ServerMapScreen extends Screen {
         super(Component.translatable("servermap.title"));
         this.parent = parent;
 
-        if (Config.showHomeOnMap && ServerCountryFlags.localLocation != null) {
+        if (Config.cfg.showHomeOnMap && ServerCountryFlags.localLocation != null) {
             addPoint(null, ServerCountryFlags.localLocation);
         }
 
-        for (Map.Entry<String, LocationInfo> entry : ServerCountryFlags.servers.entrySet()) {
-            addPoint(entry.getKey(), entry.getValue());
+        for (Map.Entry<String, APIResponse> entry : ServerCountryFlags.servers.entrySet()) {
+            if (entry.getValue().locationInfo() != null) {
+                addPoint(entry.getKey(), entry.getValue().locationInfo());
+            }
         }
     }
 
     public Point getPoint(double lon, double lat) {
         for (Point point : points) {
-            if (point.lon == lon && point.lat == lat) {
+
+            if (point.locationInfo.longitude == lon && point.locationInfo.latitude == lat) {
                 return point;
             }
         }
@@ -129,7 +133,7 @@ public class ServerMapScreen extends Screen {
     private void addPoint(String name, LocationInfo locationInfo) {
         Point point = getPoint(locationInfo.longitude, locationInfo.latitude);
         if (point != null) {
-            point.addLocationInfo(name, locationInfo);
+            point.addServer(name);
         } else {
             points.add(new Point(name, locationInfo));
         }
@@ -148,7 +152,7 @@ public class ServerMapScreen extends Screen {
                         return;
                     }
 
-                    if (Config.reloadOnRefresh) {
+                    if (Config.cfg.reloadOnRefresh) {
                         points.clear();
                         ServerCountryFlags.servers.clear();
                         ServerCountryFlags.localLocation = null;
@@ -203,7 +207,7 @@ public class ServerMapScreen extends Screen {
 
         for (int i = points.size() - 1; i >= 0; i--) {
             Point point = points.get(i);
-            Coordinates coords = latlonToPos(point.lat, point.lon, mapWidth, mapHeight);
+            Coordinates coords = latlonToPos(point.locationInfo.latitude, point.locationInfo.longitude, mapWidth, mapHeight);
             int pointStartX = mapStartX + coords.x - (pointWidth / 2);
             int pointStartY = mapStartY + coords.y - pointHeight;
 
@@ -235,65 +239,55 @@ public class ServerMapScreen extends Screen {
     public void tick() {
         super.tick();
 
-        // is this stupid?
-        boolean home = false;
-        List<LocationInfo> alreadyUsedLocationInfos = new ArrayList<>();
-        for (Point point : points) {
-            if (point.hasHome)
-                home = true;
-            for (Point.NamedLocationInfo namedLocationInfo : point.locationInfos) {
-                alreadyUsedLocationInfos.add(namedLocationInfo.locationInfo);
-            }
-        }
+        // Syncs the location infos from the server list to here
+        this.points.clear();
 
-        for (Map.Entry<String, LocationInfo> entry : ServerCountryFlags.servers.entrySet()) {
-            if (!alreadyUsedLocationInfos.contains(entry.getValue())) {
-                addPoint(entry.getKey(), entry.getValue());
-            }
-        }
-
-        if (!home && ServerCountryFlags.localLocation != null) {
+        if (ServerCountryFlags.localLocation != null) {
             addPoint(null, ServerCountryFlags.localLocation);
+        }
+
+        for (Map.Entry<String, APIResponse> entry : ServerCountryFlags.servers.entrySet()) {
+            if (entry.getValue().locationInfo() != null) {
+                addPoint(entry.getKey(), entry.getValue().locationInfo());
+            }
         }
     }
 
     public class Point {
-        public double lat, lon;
-        List<NamedLocationInfo> locationInfos;
+        LocationInfo locationInfo;
+        List<String> servers;
         public boolean hasHome;
 
         public Point(String beginningName, LocationInfo beginningLocationInfo) {
-            locationInfos = new ArrayList<>();
-            this.lat = beginningLocationInfo.latitude;
-            this.lon = beginningLocationInfo.longitude;
-            this.addLocationInfo(beginningName, beginningLocationInfo);
+            this.servers = new ArrayList<>();
+            this.locationInfo = beginningLocationInfo;
+            this.addServer(beginningName);
         }
 
-        public void addLocationInfo(String name, LocationInfo info) {
+        public void addServer(String name) {
             if (name == null) {
                 this.hasHome = true;
             }
-            locationInfos.add(new NamedLocationInfo(name, info));
+            this.servers.add(name);
         }
 
         public List<FormattedCharSequence> getTooltip() {
             List<FormattedCharSequence> list = new ArrayList<>();
-            for (NamedLocationInfo info : locationInfos) {
-                if (!list.isEmpty()) {
-                    list.add(Component.nullToEmpty("").getVisualOrderText());
-                }
-                if (info.name == null) {
+            list.add(Component.literal((Config.cfg.showDistrict && !locationInfo.districtName.equals("") ? (locationInfo.districtName + ", ") : "") + locationInfo.cityName + ", " + locationInfo.countryName).withStyle(ChatFormatting.BOLD).getVisualOrderText());
+            list.add(Component.nullToEmpty(null).getVisualOrderText());
+
+            for (String server : this.servers) {
+                if (server == null) {
                     list.add(Component.translatable("servermap.home").withStyle(ChatFormatting.BOLD).getVisualOrderText());
                 } else {
-                    list.add(Component.literal(info.name).withStyle(ChatFormatting.BOLD).getVisualOrderText());
-                    list.add(Component.literal((Config.showDistrict && !info.locationInfo.districtName.equals("") ? (info.locationInfo.districtName + ", ") : "") + info.locationInfo.cityName + ", " + info.locationInfo.countryName).getVisualOrderText());
+                    list.add(Component.literal(server).getVisualOrderText());
                 }
             }
             return list;
         }
 
         private void render(GuiGraphics context, boolean hovered) {
-            Coordinates coords = latlonToPos(this.lat, this.lon, mapWidth, mapHeight);
+            Coordinates coords = latlonToPos(this.locationInfo.latitude, this.locationInfo.longitude, mapWidth, mapHeight);
             int pointHeight = mapHeight / 20;
             int pointWidth = (int)(pointHeight * POINT_TEXTURE_ASPECT);
             int pointStartX = mapStartX + coords.x - (pointWidth / 2);
@@ -311,16 +305,6 @@ public class ServerMapScreen extends Screen {
             }
 
             context.blit(texture, pointStartX, pointStartY, 0, 0, pointWidth, pointHeight, pointWidth, pointHeight);
-        }
-
-        public class NamedLocationInfo {
-            public String name;
-            public LocationInfo locationInfo;
-
-            public NamedLocationInfo(String name, LocationInfo locationInfo) {
-                this.name = name;
-                this.locationInfo = locationInfo;
-            }
         }
     }
 
