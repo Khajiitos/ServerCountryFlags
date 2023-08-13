@@ -9,35 +9,37 @@ import net.minecraft.client.resources.language.LanguageManager;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.nio.file.*;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.Properties;
 
 public class Config {
     public static class Values {
-        @ConfigEntry(name = "Flag border", description = "Displays a border around flags")
+        @ConfigEntry(name = "Flag border", description = "Displays a border around flags", configCategory = "Border")
         public boolean flagBorder = true;
 
-        @ConfigEntry(name = "Border color R", description = "Red channel value for the border color around flags")
+        @ConfigEntry(name = "Border color R", description = "Red channel value for the border color around flags", configCategory = "Border", constraints = @Constraints(maxValue = 255))
         public int borderR = 65;
 
-        @ConfigEntry(name = "Border color G", description = "Green channel value for the border color around flags")
+        @ConfigEntry(name = "Border color G", description = "Green channel value for the border color around flags", configCategory = "Border", constraints = @Constraints(maxValue = 255))
         public int borderG = 65;
 
-        @ConfigEntry(name = "Border color B", description = "Blue channel value for the border color around flags")
+        @ConfigEntry(name = "Border color B", description = "Blue channel value for the border color around flags", configCategory = "Border", constraints = @Constraints(maxValue = 255))
         public int borderB = 65;
 
-        @ConfigEntry(name = "Border color A", description = "Alpha channel value for the border color around flags")
+        @ConfigEntry(name = "Border color A", description = "Alpha channel value for the border color around flags", configCategory = "Border", constraints = @Constraints(maxValue = 255))
         public int borderA = 255;
 
         @ConfigEntry(name = "Reload on refresh", description = "Forces flags to be reloaded when the server list is refreshed")
         public boolean reloadOnRefresh = false;
 
-        @ConfigEntry(name = "Show distance", description = "Shows the approximate distance between the server and you when you hover over a flag")
+        @ConfigEntry(name = "Show distance", description = "Shows the approximate distance between the server and you when you hover over a flag", configCategory = "Preferences")
         public boolean showDistance = true;
 
-        @ConfigEntry(name = "Use kilometers", description = "Uses kilometers instead of miles")
+        @ConfigEntry(name = "Use kilometers", description = "Uses kilometers instead of miles", configCategory = "Locale")
         public boolean useKm = true;
 
-        @ConfigEntry(name = "Force English", description = "Forces the API results to be in English instead of your in-game language")
+        @ConfigEntry(name = "Force English", description = "Forces the API results to be in English instead of your in-game language", configCategory = "Locale")
         public boolean forceEnglish = false;
 
         @ConfigEntry(name = "Display unknown flag", description = "Displays the unknown flag when we don't have data about the server yet")
@@ -52,19 +54,19 @@ public class Config {
         @ConfigEntry(name = "Show ISP", description = "Shows the ISP of the host, if available")
         public boolean showISP = false;
 
-        @ConfigEntry(name = "Map button", description = "Shows a map button in the server list which opens the server map")
+        @ConfigEntry(name = "Map button", description = "Shows a map button in the server list which opens the server map", configCategory = "Preferences")
         public boolean mapButton = true;
 
-        @ConfigEntry(name = "Map button on the right side", description = "Decides whether the map button should be on the right side or the left side")
+        @ConfigEntry(name = "Map button on the right side", description = "Decides whether the map button should be on the right side or the left side", configCategory = "Preferences")
         public boolean mapButtonRight = true;
 
-        @ConfigEntry(name = "Show home on map", description = "Shows your location on the server map too")
+        @ConfigEntry(name = "Show home on map", description = "Shows your location on the server map too", configCategory = "Preferences")
         public boolean showHomeOnMap = true;
 
         @ConfigEntry(name = "Resolve SRV redirects", description = "Uses the redirected IP (if present) instead of just the resolved IP")
         public boolean resolveRedirects = true;
 
-        @ConfigEntry(name = "Flag position", description = "Changes the flags' positions. Available options: default, left, right, behindName", stringValues = {"default", "left", "right", "behindName"})
+        @ConfigEntry(name = "Flag position", description = "Changes the flags' positions. Available options: default, left, right, behindName", stringValues = {"default", "left", "right", "behindName"}, configCategory = "Preferences")
         public String flagPosition = "behindName";
     }
 
@@ -127,7 +129,12 @@ public class Config {
                         } else if (field.getType() == boolean.class) {
                             field.setBoolean(cfg, Boolean.parseBoolean(propertiesValue));
                         } else if (field.getType() == int.class) {
-                            field.setInt(cfg, Integer.parseInt(propertiesValue));
+                            Optional<Constraints> constraints = Arrays.stream(annotation.constraints()).findFirst();
+                            int value = Integer.parseInt(propertiesValue);
+                            if (constraints.isPresent()) {
+                                value = Math.max(Math.min(value, constraints.get().maxValue()), constraints.get().minValue());
+                            }
+                            field.setInt(cfg, value);
                         } else if (field.getType() == float.class) {
                             field.setFloat(cfg, Float.parseFloat(propertiesValue));
                         } else {

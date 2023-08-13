@@ -9,7 +9,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class ClothConfigScreenMaker {
 
@@ -26,30 +28,33 @@ public class ClothConfigScreenMaker {
         // Saving the config will cause it to be written to and then instantly loaded from file again.
         // Probably not a big deal though.
 
-        ConfigCategory general = builder.getOrCreateCategory(Component.literal("General"));
-
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
         for (Field field : Config.Values.class.getDeclaredFields()) {
-            addEntryForField(field, general, entryBuilder);
+            addEntryForField(field, builder, entryBuilder);
         }
 
         return builder.build();
     }
 
-    public static void addEntryForField(Field field, ConfigCategory category, ConfigEntryBuilder entryBuilder) {
+    public static void addEntryForField(Field field, ConfigBuilder configBuilder, ConfigEntryBuilder entryBuilder) {
         ConfigEntry annotation = field.getAnnotation(ConfigEntry.class);
 
         if (annotation == null) {
             return;
         }
 
+        ConfigCategory category = configBuilder.getOrCreateCategory(Component.literal(annotation.configCategory()));
+
         try {
             if (field.getType() == int.class) {
+                Optional<Constraints> constraints = Arrays.stream(annotation.constraints()).findFirst();
                 category.addEntry(entryBuilder.startIntField(Component.literal(annotation.name()), field.getInt(Config.cfg))
                         .setTooltip(Component.literal(annotation.description()))
                         .setDefaultValue(field.getInt(Config.DEFAULT))
                         .setSaveConsumer(newValue -> setCfgInt(field, newValue))
+                        .setMin(constraints.isPresent() ? constraints.get().minValue() : null)
+                        .setMax(constraints.isPresent() ? constraints.get().maxValue() : null)
                         .build());
             } else if (field.getType() == boolean.class) {
                 category.addEntry(entryBuilder.startBooleanToggle(Component.literal(annotation.name()), field.getBoolean(Config.cfg))

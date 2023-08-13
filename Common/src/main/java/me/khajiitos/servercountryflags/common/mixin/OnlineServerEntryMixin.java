@@ -16,6 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -34,8 +35,10 @@ public class OnlineServerEntryMixin {
     @Final
     private JoinMultiplayerScreen screen;
 
+    @Unique
     private static boolean printedError = false;
 
+    @Unique
     private static String originalName;
 
     @Inject(at = @At("HEAD"), method = "render")
