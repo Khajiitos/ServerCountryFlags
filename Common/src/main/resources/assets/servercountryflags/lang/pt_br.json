@@ -1,5 +1,6 @@
 {
   "locationInfo.unknown": "(desconhecido)",
+  "locationInfo.cooldown": "(API no resfriamento)",
   "locationInfo.distance": "≈ %d %s de distância",
   "locationInfo.km": "km",
   "locationInfo.mi": "mi",

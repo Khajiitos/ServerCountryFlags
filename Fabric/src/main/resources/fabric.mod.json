@@ -6,16 +6,19 @@
   "description": "Shows the flag of where a server is located.",
   "authors": ["Khajiitos"],
   "license": "MIT",
-  "icon": "assets/servercountryflags/icon.png",
+  "icon": "icon.png",
   "environment": "client",
   "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/server-country-flags",
+    "homepage": "https://github.com/Khajiitos/ServerCountryFlags",
     "sources": "https://github.com/Khajiitos/ServerCountryFlags",
     "issues": "https://github.com/Khajiitos/ServerCountryFlags/issues"
   },
   "entrypoints": {
     "client": [
       "me.khajiitos.servercountryflags.fabric.ServerCountryFlagsFabric"
+    ],
+    "modmenu": [
+      "me.khajiitos.servercountryflags.fabric.ModMenuApiImpl"
     ]
   },
   "mixins": [
