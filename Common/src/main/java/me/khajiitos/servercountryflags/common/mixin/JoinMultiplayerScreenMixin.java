@@ -13,12 +13,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(JoinMultiplayerScreen.class)
 public class JoinMultiplayerScreenMixin extends Screen {
+    @Unique
     private static final ResourceLocation MAP_BUTTON_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/misc/map_button.png");
 
     @Shadow
@@ -30,7 +32,7 @@ public class JoinMultiplayerScreenMixin extends Screen {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     public void constructor(CallbackInfo info) {
-        if (Config.reloadOnRefresh) {
+        if (Config.cfg.reloadOnRefresh) {
             ServerCountryFlags.servers.clear();
             ServerCountryFlags.localLocation = null;
         }
@@ -50,10 +52,10 @@ public class JoinMultiplayerScreenMixin extends Screen {
             }
         }
 
-        if (Config.mapButton) {
-            int posX = this.width / 2 + (Config.mapButtonRight ? 159 : -179);
-            int posY = this.height - 30;
-            this.addRenderableWidget(new ImageButton(posX, posY, 20, 20, 0, 0, 20, MAP_BUTTON_TEXTURE, 20, 40, (button) -> Minecraft.getInstance().setScreen(new ServerMapScreen(this))));
+        if (Config.cfg.mapButton) {
+            int posX = this.width / 2 + (Config.cfg.mapButtonRight ? 159 : -179);
+            int posY = this.height - 28;
+            this.addRenderableWidget(new ImageButton(posX, posY, 20, 20, 0, 0, 20, MAP_BUTTON_TEXTURE, 40, 40, (button) -> Minecraft.getInstance().setScreen(new ServerMapScreen(this))));
         }
     }
 }

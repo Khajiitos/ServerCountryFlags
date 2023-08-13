@@ -29,9 +29,10 @@ public class NetworkChangeDetector {
                     }
                 }
             }
+            List<NetworkInterface> interfacesToRemove = new ArrayList<>();
             for (NetworkInterface networkInterface : previousInterfaces.keySet()) {
                 if (!currentInterfaces.contains(networkInterface)) {
-                    previousInterfaces.remove(networkInterface);
+                    interfacesToRemove.add(networkInterface);
                     changed = true;
                 } else {
                     for (InterfaceAddress address : networkInterface.getInterfaceAddresses()) {
@@ -42,9 +43,11 @@ public class NetworkChangeDetector {
                     }
                 }
             }
+            interfacesToRemove.forEach(previousInterfaces::remove);
         } catch (SocketException e) {
             ServerCountryFlags.LOGGER.warn("SocketException while checking network interfaces");
         }
+
         return changed;
     }
 }
