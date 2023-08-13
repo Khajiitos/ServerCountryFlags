@@ -13,6 +13,8 @@ import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -81,7 +83,7 @@ public class OnlineServerEntryMixin {
                     Minecraft.getInstance().font.draw(poseStack, this.serverData.name, x + 35, y + 1, 16777215);
                     return;
                 }
-                toolTip = Component.translatable("locationInfo.cooldown");
+                toolTip = new TranslatableComponent("locationInfo.cooldown");
                 countryCode = "timeout";
             } else if (apiResponse.unknown()) {
                 if (!Config.cfg.displayUnknownFlag && Config.cfg.flagPosition.equalsIgnoreCase("behindname")) {
@@ -89,10 +91,10 @@ public class OnlineServerEntryMixin {
                     Minecraft.getInstance().font.draw(poseStack, this.serverData.name, x + 35, y + 1, 16777215);
                     return;
                 }
-                toolTip = Component.translatable("locationInfo.unknown");
+                toolTip = new TranslatableComponent("locationInfo.unknown");
                 countryCode = "unknown";
             } else {
-                toolTip = Component.literal((Config.cfg.showDistrict && !locationInfo.districtName.equals("") ? (locationInfo.districtName + ", ") : "") + locationInfo.cityName + ", " + locationInfo.countryName);
+                toolTip = new TextComponent((Config.cfg.showDistrict && !locationInfo.districtName.equals("") ? (locationInfo.districtName + ", ") : "") + locationInfo.cityName + ", " + locationInfo.countryName);
                 countryCode = locationInfo.countryCode;
             }
         } else {
@@ -100,7 +102,7 @@ public class OnlineServerEntryMixin {
                 this.serverData.name = originalName;
                 Minecraft.getInstance().font.draw(poseStack, this.serverData.name, x + 35, y + 1, 16777215);                return;
             }
-            toolTip = Component.translatable("locationInfo.unknown");
+            toolTip = new TranslatableComponent("locationInfo.unknown");
             countryCode = "unknown";
         }
 
@@ -136,7 +138,7 @@ public class OnlineServerEntryMixin {
                 ServerCountryFlags.LOGGER.error("ERROR: Unsupported country code: " + countryCode);
                 printedError = true;
             }
-            toolTip = Component.translatable("locationInfo.unknown");
+            toolTip = new TranslatableComponent("locationInfo.unknown");
             countryCode = "unknown";
         }
 
@@ -156,12 +158,12 @@ public class OnlineServerEntryMixin {
 
             if (locationInfo != null) {
                 if (Config.cfg.showISP && !locationInfo.ispName.equals("")) {
-                    toolTipList.add(Component.translatable("locationInfo.isp", locationInfo.ispName));
+                    toolTipList.add(new TranslatableComponent("locationInfo.isp", locationInfo.ispName));
                 }
                 if (Config.cfg.showDistance) {
                     double distanceFromLocal = locationInfo.getDistanceFromLocal(Config.cfg.useKm);
                     if (distanceFromLocal != -1.0) {
-                        toolTipList.add(Component.translatable("locationInfo.distance", (int)distanceFromLocal, Component.translatable(Config.cfg.useKm ? "locationInfo.km" : "locationInfo.mi")).withStyle(ChatFormatting.ITALIC));
+                        toolTipList.add(new TranslatableComponent("locationInfo.distance", (int)distanceFromLocal, new TranslatableComponent(Config.cfg.useKm ? "locationInfo.km" : "locationInfo.mi")).withStyle(ChatFormatting.ITALIC));
                     }
                 }
             }

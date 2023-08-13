@@ -27,8 +27,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -58,27 +58,24 @@ public class ServerCountryFlags {
 		NetworkChangeDetector.check();
 		Minecraft.getInstance().execute(() -> {
 			ResourceManager resourceManager =  Minecraft.getInstance().getResourceManager();
-			Map<ResourceLocation, Resource> resourceLocations = resourceManager.listResources("textures/flags", path -> true);
+			Collection<ResourceLocation> resourceLocations = resourceManager.listResources("textures/flags", path -> path.endsWith(".png"));
 
 			Thread flagThread = new Thread(() -> {
-				for (Map.Entry<ResourceLocation, Resource> entry : resourceLocations.entrySet()) {
-					if (!entry.getKey().getNamespace().equals(MOD_ID)) {
+				for (ResourceLocation resourceLocation : resourceLocations) {
+					if (!resourceLocation.getNamespace().equals(MOD_ID)) {
 						continue;
 					}
 					try {
-						if (entry.getValue() == null) {
-							ServerCountryFlags.LOGGER.error("Failed to load resource " + entry.getKey().getPath());
-							continue;
-						}
+						Resource resource = resourceManager.getResource(resourceLocation);
 
-						try (InputStream inputStream = entry.getValue().open()) {
+						try (InputStream inputStream = resource.getInputStream()) {
 							NativeImage image = NativeImage.read(inputStream);
-							String code = last(entry.getKey().getPath().split("/"));
+							String code = last(resourceLocation.getPath().split("/"));
 							code = code.substring(0, code.length() - 4);
 							flagAspectRatios.put(code, (float)image.getWidth() / (float)image.getHeight());
 						}
 					} catch (IOException e) {
-						LOGGER.error(e.getMessage());
+						ServerCountryFlags.LOGGER.error("Failed to load resource " + resourceLocation.getPath());
 					}
 				}
 				flagAspectRatiosLoaded = true;

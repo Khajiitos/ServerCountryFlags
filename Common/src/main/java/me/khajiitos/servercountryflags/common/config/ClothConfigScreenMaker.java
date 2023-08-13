@@ -6,7 +6,7 @@ import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -22,7 +22,7 @@ public class ClothConfigScreenMaker {
     public static Screen create(Screen parent) {
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)
-                .setTitle(Component.literal("Server Country Flags"))
+                .setTitle(new TextComponent("Server Country Flags"))
                 .setSavingRunnable(Config::save);
 
         // Saving the config will cause it to be written to and then instantly loaded from file again.
@@ -44,35 +44,35 @@ public class ClothConfigScreenMaker {
             return;
         }
 
-        ConfigCategory category = configBuilder.getOrCreateCategory(Component.literal(annotation.configCategory()));
+        ConfigCategory category = configBuilder.getOrCreateCategory(new TextComponent(annotation.configCategory()));
 
         try {
             if (field.getType() == int.class) {
                 Optional<Constraints> constraints = Arrays.stream(annotation.constraints()).findFirst();
-                category.addEntry(entryBuilder.startIntField(Component.literal(annotation.name()), field.getInt(Config.cfg))
-                        .setTooltip(Component.literal(annotation.description()))
+                category.addEntry(entryBuilder.startIntField(new TextComponent(annotation.name()), field.getInt(Config.cfg))
+                        .setTooltip(new TextComponent(annotation.description()))
                         .setDefaultValue(field.getInt(Config.DEFAULT))
                         .setSaveConsumer(newValue -> setCfgInt(field, newValue))
                         .setMin(constraints.isPresent() ? constraints.get().minValue() : null)
                         .setMax(constraints.isPresent() ? constraints.get().maxValue() : null)
                         .build());
             } else if (field.getType() == boolean.class) {
-                category.addEntry(entryBuilder.startBooleanToggle(Component.literal(annotation.name()), field.getBoolean(Config.cfg))
-                        .setTooltip(Component.literal(annotation.description()))
+                category.addEntry(entryBuilder.startBooleanToggle(new TextComponent(annotation.name()), field.getBoolean(Config.cfg))
+                        .setTooltip(new TextComponent(annotation.description()))
                         .setDefaultValue(field.getBoolean(Config.DEFAULT))
                         .setSaveConsumer(newValue -> setCfgBoolean(field, newValue))
                         .build());
             } else if (field.getType() == String.class) {
                 if (annotation.stringValues() != null) {
-                    category.addEntry(entryBuilder.startStringDropdownMenu(Component.literal(annotation.name()), (String)field.get(Config.cfg))
+                    category.addEntry(entryBuilder.startStringDropdownMenu(new TextComponent(annotation.name()), (String)field.get(Config.cfg))
                             .setSelections(List.of(annotation.stringValues()))
-                            .setTooltip(Component.literal(annotation.description()))
+                            .setTooltip(new TextComponent(annotation.description()))
                             .setDefaultValue((String)field.get(Config.DEFAULT))
                             .setSaveConsumer(newValue -> setCfgString(field, newValue))
                             .build());
                 } else {
-                    category.addEntry(entryBuilder.startStrField(Component.literal(annotation.name()), (String)field.get(Config.cfg))
-                            .setTooltip(Component.literal(annotation.description()))
+                    category.addEntry(entryBuilder.startStrField(new TextComponent(annotation.name()), (String)field.get(Config.cfg))
+                            .setTooltip(new TextComponent(annotation.description()))
                             .setDefaultValue((String)field.get(Config.DEFAULT))
                             .setSaveConsumer(newValue -> setCfgString(field, newValue))
                             .build());

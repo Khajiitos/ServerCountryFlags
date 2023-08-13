@@ -12,6 +12,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +46,7 @@ public class ServerMapScreen extends Screen {
     private double movingMapLastY = -1.0;
 
     public ServerMapScreen(Screen parent) {
-        super(Component.translatable("servermap.title"));
+        super(new TranslatableComponent("servermap.title"));
         this.parent = parent;
 
         if (Config.cfg.showHomeOnMap && ServerCountryFlags.localLocation != null) {
@@ -147,7 +149,7 @@ public class ServerMapScreen extends Screen {
                 this.height - 26,
                 100,
                 20,
-                Component.translatable("selectServer.refresh"),
+                new TranslatableComponent("selectServer.refresh"),
                 (button) -> {
                     this.clearWidgets();
                     this.init();
@@ -180,7 +182,7 @@ public class ServerMapScreen extends Screen {
                 this.height - 26,
                 100,
                 20,
-                Component.translatable("gui.back"),
+                new TranslatableComponent("gui.back"),
                 (button) -> Minecraft.getInstance().setScreen(this.parent)
         ));
     }
@@ -280,14 +282,14 @@ public class ServerMapScreen extends Screen {
 
         public List<FormattedCharSequence> getTooltip() {
             List<FormattedCharSequence> list = new ArrayList<>();
-            list.add(Component.literal((Config.cfg.showDistrict && !locationInfo.districtName.equals("") ? (locationInfo.districtName + ", ") : "") + locationInfo.cityName + ", " + locationInfo.countryName).withStyle(ChatFormatting.BOLD).getVisualOrderText());
+            list.add(new TextComponent((Config.cfg.showDistrict && !locationInfo.districtName.equals("") ? (locationInfo.districtName + ", ") : "") + locationInfo.cityName + ", " + locationInfo.countryName).withStyle(ChatFormatting.BOLD).getVisualOrderText());
             list.add(Component.nullToEmpty(null).getVisualOrderText());
 
             for (String server : this.servers) {
                 if (server == null) {
-                    list.add(Component.translatable("servermap.home").withStyle(ChatFormatting.BOLD).getVisualOrderText());
+                    list.add(new TranslatableComponent("servermap.home").withStyle(ChatFormatting.BOLD).getVisualOrderText());
                 } else {
-                    list.add(Component.literal(server).getVisualOrderText());
+                    list.add(new TextComponent(server).getVisualOrderText());
                 }
             }
             return list;
