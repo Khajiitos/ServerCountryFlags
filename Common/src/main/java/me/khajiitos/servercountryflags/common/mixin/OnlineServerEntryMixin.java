@@ -42,6 +42,14 @@ public class OnlineServerEntryMixin {
     @Unique
     private static String originalName;
 
+    @Unique
+    private static void renderOutline(PoseStack poseStack, int x, int y, int width, int height, int color) {
+        GuiComponent.fill(poseStack, x, y, x + width, y + 1, color);
+        GuiComponent.fill(poseStack, x, y + height - 1, x + width, y + height, color);
+        GuiComponent.fill(poseStack, x, y + 1, x + 1, y + height - 1, color);
+        GuiComponent.fill(poseStack, x + width - 1, y + 1, x + width, y + height - 1, color);
+    }
+
     @Inject(at = @At("HEAD"), method = "render")
     public void renderHead(PoseStack poseStack, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo info) {
         if (!ServerCountryFlags.flagAspectRatiosLoaded) {
@@ -139,7 +147,7 @@ public class OnlineServerEntryMixin {
         GuiComponent.blit(poseStack, startingX, startingY, 0.0F, 0.0F, width, height, width, height);
         if (Config.cfg.flagBorder) {
             final int color = (Config.cfg.borderR << 16) | (Config.cfg.borderG << 8) | Config.cfg.borderB | (Config.cfg.borderA << 24);
-            GuiComponent.renderOutline(poseStack, startingX - 1, startingY - 1, width + 2, height + 2, color);
+            renderOutline(poseStack, startingX - 1, startingY - 1, width + 2, height + 2, color);
         }
         RenderSystem.disableBlend();
         if (mouseX >= startingX && mouseX <= startingX + width && mouseY >= startingY && mouseY <= startingY + height) {
