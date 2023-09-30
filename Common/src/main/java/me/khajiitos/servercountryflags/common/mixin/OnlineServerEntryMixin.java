@@ -80,7 +80,7 @@ public class OnlineServerEntryMixin {
                     Minecraft.getInstance().font.draw(poseStack, this.serverData.name, x + 35, y + 1, 16777215);
                     return;
                 }
-                toolTip = new TranslatableComponent("locationInfo.cooldown");
+                toolTip = new TranslatableComponent("servercountryflags.locationInfo.cooldown");
                 countryCode = "timeout";
             } else if (apiResponse.unknown()) {
                 if (!Config.cfg.displayUnknownFlag && Config.cfg.flagPosition.equalsIgnoreCase("behindname")) {
@@ -88,7 +88,7 @@ public class OnlineServerEntryMixin {
                     Minecraft.getInstance().font.draw(poseStack, this.serverData.name, x + 35, y + 1, 16777215);
                     return;
                 }
-                toolTip = new TranslatableComponent("locationInfo.unknown");
+                toolTip = new TranslatableComponent("servercountryflags.locationInfo.unknown");
                 countryCode = "unknown";
             } else {
                 toolTip = new TextComponent((Config.cfg.showDistrict && !locationInfo.districtName.equals("") ? (locationInfo.districtName + ", ") : "") + locationInfo.cityName + ", " + locationInfo.countryName);
@@ -99,7 +99,7 @@ public class OnlineServerEntryMixin {
                 this.serverData.name = originalName;
                 Minecraft.getInstance().font.draw(poseStack, this.serverData.name, x + 35, y + 1, 16777215);                return;
             }
-            toolTip = new TranslatableComponent("locationInfo.unknown");
+            toolTip = new TranslatableComponent("servercountryflags.locationInfo.unknown");
             countryCode = "unknown";
         }
 
@@ -149,8 +149,7 @@ public class OnlineServerEntryMixin {
         RenderSystem.setShaderTexture(0, textureId);
         GuiComponent.blit(poseStack, startingX, startingY, 0.0F, 0.0F, width, height, width, height);
         if (Config.cfg.flagBorder) {
-            final int color = (Config.cfg.borderR << 16) | (Config.cfg.borderG << 8) | Config.cfg.borderB | (Config.cfg.borderA << 24);
-            renderOutline(poseStack, startingX - 1, startingY - 1, width + 2, height + 2, color);
+            renderOutline(poseStack, startingX - 1, startingY - 1, width + 2, height + 2, Config.cfg.borderColor.toARGB());
         }
         RenderSystem.disableBlend();
         if (mouseX >= startingX && mouseX <= startingX + width && mouseY >= startingY && mouseY <= startingY + height) {
@@ -159,12 +158,12 @@ public class OnlineServerEntryMixin {
 
             if (locationInfo != null) {
                 if (Config.cfg.showISP && !locationInfo.ispName.equals("")) {
-                    toolTipList.add(new TranslatableComponent("locationInfo.isp", locationInfo.ispName));
+                    toolTipList.add(new TranslatableComponent("servercountryflags.locationInfo.isp", locationInfo.ispName));
                 }
                 if (Config.cfg.showDistance) {
                     double distanceFromLocal = locationInfo.getDistanceFromLocal(Config.cfg.useKm);
                     if (distanceFromLocal != -1.0) {
-                        toolTipList.add(new TranslatableComponent("locationInfo.distance", (int)distanceFromLocal, new TranslatableComponent(Config.cfg.useKm ? "locationInfo.km" : "locationInfo.mi")).withStyle(ChatFormatting.ITALIC));
+                        toolTipList.add(new TranslatableComponent("servercountryflags.locationInfo.distance", (int)distanceFromLocal, new TranslatableComponent(Config.cfg.useKm ? "servercountryflags.locationInfo.km" : "servercountryflags.locationInfo.mi")).withStyle(ChatFormatting.ITALIC));
                     }
                 }
             }

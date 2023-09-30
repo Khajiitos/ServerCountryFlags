@@ -15,12 +15,14 @@ import net.minecraftforge.network.NetworkConstants;
 public class ServerCountryFlagsForge {
 
     public ServerCountryFlagsForge() {
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> ServerCountryFlags::init);
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            ServerCountryFlags.init();
 
-        if (ClothConfigCheck.isInstalled()) {
-            ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class, () -> new ConfigGuiHandler.ConfigGuiFactory(ClothConfigScreenMaker::create));
-        }
+            if (ClothConfigCheck.isInstalled()) {
+                ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class, () -> new ConfigGuiHandler.ConfigGuiFactory(ClothConfigScreenMaker::create));
+            }
 
-        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
+            ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
+        });
     }
 }
