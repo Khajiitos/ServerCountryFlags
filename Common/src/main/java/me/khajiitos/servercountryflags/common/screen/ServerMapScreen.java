@@ -44,7 +44,7 @@ public class ServerMapScreen extends Screen {
     private double movingMapLastY = -1.0;
 
     public ServerMapScreen(Screen parent) {
-        super(Component.translatable("servermap.title"));
+        super(Component.translatable("servercountryflags.servermap.title"));
         this.parent = parent;
 
         if (Config.cfg.showHomeOnMap && ServerCountryFlags.localLocation != null) {
@@ -277,7 +277,7 @@ public class ServerMapScreen extends Screen {
 
             for (String server : this.servers) {
                 if (server == null) {
-                    list.add(Component.translatable("servermap.home").withStyle(ChatFormatting.BOLD).getVisualOrderText());
+                    list.add(Component.translatable("servercountryflags.servermap.home").withStyle(ChatFormatting.BOLD).getVisualOrderText());
                 } else {
                     list.add(Component.literal(server).getVisualOrderText());
                 }

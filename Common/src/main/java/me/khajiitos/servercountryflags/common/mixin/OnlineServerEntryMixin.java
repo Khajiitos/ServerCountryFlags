@@ -8,7 +8,7 @@ import me.khajiitos.servercountryflags.common.util.APIResponse;
 import me.khajiitos.servercountryflags.common.util.LocationInfo;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
 import net.minecraft.client.multiplayer.ServerData;
@@ -70,7 +70,7 @@ public class OnlineServerEntryMixin {
                     Minecraft.getInstance().font.draw(poseStack, this.serverData.name, x + 35, y + 1, 16777215);
                     return;
                 }
-                toolTip = Component.translatable("locationInfo.cooldown");
+                toolTip = Component.translatable("servercountryflags.locationInfo.cooldown");
                 countryCode = "timeout";
             } else if (apiResponse.unknown()) {
                 if (!Config.cfg.displayUnknownFlag && Config.cfg.flagPosition.equalsIgnoreCase("behindname")) {
@@ -78,7 +78,7 @@ public class OnlineServerEntryMixin {
                     Minecraft.getInstance().font.draw(poseStack, this.serverData.name, x + 35, y + 1, 16777215);
                     return;
                 }
-                toolTip = Component.translatable("locationInfo.unknown");
+                toolTip = Component.translatable("servercountryflags.locationInfo.unknown");
                 countryCode = "unknown";
             } else {
                 toolTip = Component.literal((Config.cfg.showDistrict && !locationInfo.districtName.equals("") ? (locationInfo.districtName + ", ") : "") + locationInfo.cityName + ", " + locationInfo.countryName);
@@ -89,7 +89,7 @@ public class OnlineServerEntryMixin {
                 this.serverData.name = originalName;
                 Minecraft.getInstance().font.draw(poseStack, this.serverData.name, x + 35, y + 1, 16777215);                return;
             }
-            toolTip = Component.translatable("locationInfo.unknown");
+            toolTip = Component.translatable("servercountryflags.locationInfo.unknown");
             countryCode = "unknown";
         }
 
@@ -133,14 +133,13 @@ public class OnlineServerEntryMixin {
             }
         }
 
-        ResourceLocation textureId = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/flags/" + countryCode + ".png");
+        ResourceLocation textureId = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/gui/flags/" + countryCode + ".png");
 
         RenderSystem.enableBlend();
         RenderSystem.setShaderTexture(0, textureId);
         GuiComponent.blit(poseStack, startingX, startingY, 0.0F, 0.0F, width, height, width, height);
         if (Config.cfg.flagBorder) {
-            final int color = (Config.cfg.borderR << 16) | (Config.cfg.borderG << 8) | Config.cfg.borderB | (Config.cfg.borderA << 24);
-            GuiComponent.renderOutline(poseStack, startingX - 1, startingY - 1, width + 2, height + 2, color);
+            GuiComponent.renderOutline(poseStack, startingX - 1, startingY - 1, width + 2, height + 2, Config.cfg.borderColor.toARGB());
         }
         RenderSystem.disableBlend();
         if (mouseX >= startingX && mouseX <= startingX + width && mouseY >= startingY && mouseY <= startingY + height) {
@@ -149,12 +148,12 @@ public class OnlineServerEntryMixin {
 
             if (locationInfo != null) {
                 if (Config.cfg.showISP && !locationInfo.ispName.equals("")) {
-                    toolTipList.add(Component.translatable("locationInfo.isp", locationInfo.ispName));
+                    toolTipList.add(Component.translatable("servercountryflags.locationInfo.isp", locationInfo.ispName));
                 }
                 if (Config.cfg.showDistance) {
                     double distanceFromLocal = locationInfo.getDistanceFromLocal(Config.cfg.useKm);
                     if (distanceFromLocal != -1.0) {
-                        toolTipList.add(Component.translatable("locationInfo.distance", (int)distanceFromLocal, Component.translatable(Config.cfg.useKm ? "locationInfo.km" : "locationInfo.mi")).withStyle(ChatFormatting.ITALIC));
+                        toolTipList.add(Component.translatable("servercountryflags.locationInfo.distance", (int)distanceFromLocal, Component.translatable(Config.cfg.useKm ? "servercountryflags.locationInfo.km" : "servercountryflags.locationInfo.mi")).withStyle(ChatFormatting.ITALIC));
                     }
                 }
             }
