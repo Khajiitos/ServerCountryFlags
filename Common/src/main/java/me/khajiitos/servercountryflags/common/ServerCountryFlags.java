@@ -56,7 +56,7 @@ public class ServerCountryFlags {
 		NetworkChangeDetector.check();
 		Minecraft.getInstance().execute(() -> {
 			ResourceManager resourceManager =  Minecraft.getInstance().getResourceManager();
-			Map<ResourceLocation, Resource> resourceLocations = resourceManager.listResources("textures/flags", path -> true);
+			Map<ResourceLocation, Resource> resourceLocations = resourceManager.listResources("textures/gui/flags", path -> true);
 
 			Thread flagThread = new Thread(() -> {
 				for (Map.Entry<ResourceLocation, Resource> entry : resourceLocations.entrySet()) {

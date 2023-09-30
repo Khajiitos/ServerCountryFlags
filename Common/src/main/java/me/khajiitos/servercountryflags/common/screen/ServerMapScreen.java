@@ -22,10 +22,10 @@ import java.util.List;
 import java.util.Map;
 
 public class ServerMapScreen extends Screen {
-    public static final ResourceLocation MAP_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/misc/map.jpg");
-    public static final ResourceLocation POINT_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/misc/point.png");
-    public static final ResourceLocation POINT_HOVERED_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/misc/point_hovered.png");
-    public static final ResourceLocation POINT_HOME_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/misc/point_home.png");
+    public static final ResourceLocation MAP_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/gui/misc/map.jpg");
+    public static final ResourceLocation POINT_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/gui/misc/point.png");
+    public static final ResourceLocation POINT_HOVERED_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/gui/misc/point_hovered.png");
+    public static final ResourceLocation POINT_HOME_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/gui/misc/point_home.png");
     public static final double MAP_TEXTURE_ASPECT = 3600.0 / 1800.0;
     public static final double POINT_TEXTURE_ASPECT = 526.0 / 754.0;
     public static final double ZOOM_STRENGTH = 0.1;
@@ -111,13 +111,13 @@ public class ServerMapScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double amountX, double amountY) {
         if (mouseX >= mapStartX && mouseX <= mapStartX + mapWidth && mouseY >= mapStartY && mouseY <= mapStartY + mapHeight) {
             double oldWidth = zoomedAreaWidth;
             double oldHeight = zoomedAreaHeight;
 
-            zoomedAreaWidth = clampDouble(zoomedAreaWidth - amount * ZOOM_STRENGTH, 0.05, 1.0);
-            zoomedAreaHeight = clampDouble(zoomedAreaHeight - amount * ZOOM_STRENGTH, 0.05, 1.0);
+            zoomedAreaWidth = clampDouble(zoomedAreaWidth - amountY * ZOOM_STRENGTH, 0.05, 1.0);
+            zoomedAreaHeight = clampDouble(zoomedAreaHeight - amountY * ZOOM_STRENGTH, 0.05, 1.0);
 
             double widthDelta = oldWidth - zoomedAreaWidth;
             double heightDelta = oldHeight - zoomedAreaHeight;
@@ -126,7 +126,7 @@ public class ServerMapScreen extends Screen {
             zoomedAreaStartY = clampDouble(zoomedAreaStartY + ((mouseY - mapStartY) / mapHeight) * heightDelta, 0.0, 1.0 - zoomedAreaHeight);
             return true;
         } else {
-            return super.mouseScrolled(mouseX, mouseY, amount);
+            return super.mouseScrolled(mouseX, mouseY, amountX, amountY);
         }
     }
 
@@ -179,7 +179,7 @@ public class ServerMapScreen extends Screen {
 
     @Override
     public void render(@NotNull GuiGraphics context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
+        this.renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
         context.drawCenteredString(this.font, this.getTitle().getVisualOrderText(), this.width / 2, 12, 0xFFFFFFFF);
         context.fill(0, 32, this.width, this.height - 32, 0xAA000000);

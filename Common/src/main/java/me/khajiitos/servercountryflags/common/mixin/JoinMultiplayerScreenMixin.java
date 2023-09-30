@@ -6,6 +6,7 @@ import me.khajiitos.servercountryflags.common.screen.ServerMapScreen;
 import me.khajiitos.servercountryflags.common.util.NetworkChangeDetector;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.multiplayer.ServerList;
@@ -21,7 +22,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(JoinMultiplayerScreen.class)
 public class JoinMultiplayerScreenMixin extends Screen {
     @Unique
-    private static final ResourceLocation MAP_BUTTON_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/misc/map_button.png");
+    private static final WidgetSprites MAP_BUTTON_SPRITES = new WidgetSprites(
+            new ResourceLocation(ServerCountryFlags.MOD_ID, "widget/map_button"),
+            new ResourceLocation(ServerCountryFlags.MOD_ID, "widget/map_button_focused")
+    );
+
+    @Unique
+    private static final WidgetSprites MAP_BUTTON_SPRITES_HIGH_CONTRAST = new WidgetSprites(
+            new ResourceLocation(ServerCountryFlags.MOD_ID, "widget/map_button_high_contrast"),
+            new ResourceLocation(ServerCountryFlags.MOD_ID, "widget/map_button_focused_high_contrast")
+    );
 
     @Shadow
     private ServerList servers;
@@ -55,7 +65,7 @@ public class JoinMultiplayerScreenMixin extends Screen {
         if (Config.cfg.mapButton) {
             int posX = this.width / 2 + (Config.cfg.mapButtonRight ? 159 : -179);
             int posY = this.height - 30;
-            this.addRenderableWidget(new ImageButton(posX, posY, 20, 20, Minecraft.getInstance().options.highContrast().get() ? 20 : 0, 0, 20, MAP_BUTTON_TEXTURE, 40, 40, (button) -> Minecraft.getInstance().setScreen(new ServerMapScreen(this))));
+            this.addRenderableWidget(new ImageButton(posX, posY, 20, 20, Minecraft.getInstance().options.highContrast().get() ? MAP_BUTTON_SPRITES_HIGH_CONTRAST : MAP_BUTTON_SPRITES, (button) -> Minecraft.getInstance().setScreen(new ServerMapScreen(this))));
         }
     }
 }
