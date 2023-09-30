@@ -124,7 +124,7 @@ public class ServerCountryFlags {
 		try {
 			APITimeoutManager.incrementRequestsSent();
 			URL apiUrl = new URL(apiUrlStr);
-			URLConnection con = apiUrl.openConnection();
+			HttpURLConnection con = (HttpURLConnection) apiUrl.openConnection();
 			con.setConnectTimeout(3000);
 
 			int requestsLeft = con.getHeaderFieldInt("X-Rl", -1);
@@ -135,6 +135,10 @@ public class ServerCountryFlags {
 			if (requestsLeft != -1 && secondsLeft != -1) {
 				APITimeoutManager.setRequestsLeft(requestsLeft - APITimeoutManager.getRequestsSent());
 				APITimeoutManager.setSecondsLeftUntilReset(secondsLeft);
+			}
+
+			if (con.getResponseCode() == 429) {
+				return new APIResponse(APIResponse.Status.COOLDOWN, null);
 			}
 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
@@ -185,7 +189,7 @@ public class ServerCountryFlags {
 				APIResponse response = getAPIResponse(stringHostAddress);
 				APIResponse oldResponse = servers.get(serverAddress);
 				if (oldResponse == null || (oldResponse.unknown() || !response.unknown()) || (oldResponse.cooldown() && response.locationInfo() != null)) {
-					servers.putIfAbsent(serverAddress, response);
+					servers.put(serverAddress, response);
 				}
 			}
 		});
