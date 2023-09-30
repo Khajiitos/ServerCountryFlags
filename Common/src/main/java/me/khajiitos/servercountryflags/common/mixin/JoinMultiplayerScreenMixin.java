@@ -3,6 +3,7 @@ package me.khajiitos.servercountryflags.common.mixin;
 import me.khajiitos.servercountryflags.common.ServerCountryFlags;
 import me.khajiitos.servercountryflags.common.config.Config;
 import me.khajiitos.servercountryflags.common.screen.ServerMapScreen;
+import me.khajiitos.servercountryflags.common.util.APIResponse;
 import me.khajiitos.servercountryflags.common.util.NetworkChangeDetector;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ImageButton;
@@ -47,7 +48,7 @@ public class JoinMultiplayerScreenMixin extends Screen {
         ServerCountryFlags.serverList = this.servers;
 
         for (int i = 0; i < this.servers.size(); i++) {
-            if (!ServerCountryFlags.servers.containsKey(this.servers.get(i).ip)) {
+            if (!ServerCountryFlags.servers.containsKey(this.servers.get(i).ip) || ServerCountryFlags.servers.get(this.servers.get(i).ip).status() != APIResponse.Status.SUCCESS) {
                 ServerCountryFlags.updateServerLocationInfo(this.servers.get(i).ip);
             }
         }
