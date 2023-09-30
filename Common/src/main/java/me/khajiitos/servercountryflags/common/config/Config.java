@@ -1,9 +1,11 @@
 package me.khajiitos.servercountryflags.common.config;
 
 import me.khajiitos.servercountryflags.common.ServerCountryFlags;
+import me.khajiitos.servercountryflags.common.util.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.language.LanguageManager;
 
 import java.io.*;
@@ -15,58 +17,49 @@ import java.util.Properties;
 
 public class Config {
     public static class Values {
-        @ConfigEntry(name = "Flag border", description = "Displays a border around flags", configCategory = "Border")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.border")
         public boolean flagBorder = true;
 
-        @ConfigEntry(name = "Border color R", description = "Red channel value for the border color around flags", configCategory = "Border", constraints = @Constraints(maxValue = 255))
-        public int borderR = 65;
+        @ConfigEntry(configCategory = "servercountryflags.config.category.border")
+        public Color borderColor = new Color(65, 65, 65, 255);
 
-        @ConfigEntry(name = "Border color G", description = "Green channel value for the border color around flags", configCategory = "Border", constraints = @Constraints(maxValue = 255))
-        public int borderG = 65;
-
-        @ConfigEntry(name = "Border color B", description = "Blue channel value for the border color around flags", configCategory = "Border", constraints = @Constraints(maxValue = 255))
-        public int borderB = 65;
-
-        @ConfigEntry(name = "Border color A", description = "Alpha channel value for the border color around flags", configCategory = "Border", constraints = @Constraints(maxValue = 255))
-        public int borderA = 255;
-
-        @ConfigEntry(name = "Reload on refresh", description = "Forces flags to be reloaded when the server list is refreshed")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.border")
         public boolean reloadOnRefresh = false;
 
-        @ConfigEntry(name = "Show distance", description = "Shows the approximate distance between the server and you when you hover over a flag", configCategory = "Preferences")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences")
         public boolean showDistance = true;
 
-        @ConfigEntry(name = "Use kilometers", description = "Uses kilometers instead of miles", configCategory = "Locale")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.locale")
         public boolean useKm = true;
 
-        @ConfigEntry(name = "Force English", description = "Forces the API results to be in English instead of your in-game language", configCategory = "Locale")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.locale")
         public boolean forceEnglish = false;
 
-        @ConfigEntry(name = "Display unknown flag", description = "Displays the unknown flag when we don't have data about the server yet")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences")
         public boolean displayUnknownFlag = true;
 
-        @ConfigEntry(name = "Display cooldown flag", description = "Displays a timeout flag when we have an API cooldown")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences")
         public boolean displayCooldownFlag = true;
 
-        @ConfigEntry(name = "Show district", description = "Shows the district of the location too, if available")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences")
         public boolean showDistrict = false;
 
-        @ConfigEntry(name = "Show ISP", description = "Shows the ISP of the host, if available")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences")
         public boolean showISP = false;
 
-        @ConfigEntry(name = "Map button", description = "Shows a map button in the server list which opens the server map", configCategory = "Preferences")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences")
         public boolean mapButton = true;
 
-        @ConfigEntry(name = "Map button on the right side", description = "Decides whether the map button should be on the right side or the left side", configCategory = "Preferences")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences")
         public boolean mapButtonRight = true;
 
-        @ConfigEntry(name = "Show home on map", description = "Shows your location on the server map too", configCategory = "Preferences")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences")
         public boolean showHomeOnMap = true;
 
-        @ConfigEntry(name = "Resolve SRV redirects", description = "Uses the redirected IP (if present) instead of just the resolved IP")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences")
         public boolean resolveRedirects = true;
 
-        @ConfigEntry(name = "Flag position", description = "Changes the flags' positions. Available options: default, left, right, behindName", stringValues = {"default", "left", "right", "behindName"}, configCategory = "Preferences")
+        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences")
         public String flagPosition = "behindName";
     }
 
@@ -137,6 +130,8 @@ public class Config {
                             field.setInt(cfg, value);
                         } else if (field.getType() == float.class) {
                             field.setFloat(cfg, Float.parseFloat(propertiesValue));
+                        } else if (field.getType() == Color.class) {
+                            field.set(cfg, Color.fromString(propertiesValue));
                         } else {
                             ServerCountryFlags.LOGGER.warn("Bug: unsupported config type " + field.getType().getSimpleName());
                         }
@@ -186,8 +181,9 @@ public class Config {
             if (annotation != null) {
                 try {
                     String fieldName = field.getName();
-                    if (!annotation.description().equals("")) {
-                        fieldsDescriptions.append("\n").append(fieldName).append(" - ").append(annotation.description());
+                    String translationDescriptionName = String.format("servercountryflags.config.field.%s.description", fieldName);
+                    if (I18n.exists(translationDescriptionName)) {
+                        fieldsDescriptions.append("\n").append(fieldName).append(" - ").append(translationDescriptionName);
                     }
                     properties.setProperty(fieldName, String.valueOf(field.get(cfg)));
                 } catch (IllegalAccessException e) {
@@ -197,9 +193,9 @@ public class Config {
         }
 
         try {
-            String comments = "Mod properties file";
+            String comments = I18n.get("servercountryflags.config.properties_file");
             if (!fieldsDescriptions.isEmpty()) {
-                comments += "\nField descriptions:" + fieldsDescriptions;
+                comments += "\n" + I18n.get("servercountryflags.config.field_descriptions", fieldsDescriptions);
             }
             properties.store(new FileOutputStream(propertiesFile), comments);
         } catch (FileNotFoundException e) {
