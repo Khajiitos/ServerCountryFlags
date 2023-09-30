@@ -36,9 +36,6 @@ public class OnlineServerEntryMixin {
     private JoinMultiplayerScreen screen;
 
     @Unique
-    private static boolean printedError = false;
-
-    @Unique
     private static String originalName;
 
     @Inject(at = @At("HEAD"), method = "render")
@@ -97,7 +94,20 @@ public class OnlineServerEntryMixin {
         }
 
         int height = 12;
-        double aspect = ServerCountryFlags.flagAspectRatios.get(countryCode);
+
+        double aspect;
+        if (ServerCountryFlags.flagAspectRatios.containsKey(countryCode)) {
+            aspect = ServerCountryFlags.flagAspectRatios.get(countryCode);
+        } else {
+            if (!ServerCountryFlags.unknownCountryCodes.contains(countryCode)) {
+                ServerCountryFlags.LOGGER.error("Unknown country code: " + countryCode);
+                ServerCountryFlags.unknownCountryCodes.add(countryCode);
+            }
+
+            countryCode = "unknown";
+            aspect = 1.5;
+        }
+
         int width = (int)(aspect * height);
         int startingX, startingY;
 
@@ -122,15 +132,6 @@ public class OnlineServerEntryMixin {
                 startingX = x + entryWidth - width - 6;
                 startingY = y + entryHeight - height - 4;
             }
-        }
-
-        if (!ServerCountryFlags.flagAspectRatios.containsKey(countryCode)) {
-            if (!printedError) {
-                ServerCountryFlags.LOGGER.error("ERROR: Unsupported country code: " + countryCode);
-                printedError = true;
-            }
-            toolTip = Component.translatable("locationInfo.unknown");
-            countryCode = "unknown";
         }
 
         ResourceLocation textureId = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/flags/" + countryCode + ".png");
