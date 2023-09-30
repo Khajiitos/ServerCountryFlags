@@ -13,10 +13,12 @@ import net.minecraftforge.fml.common.Mod;
 public class ServerCountryFlagsForge {
 
     public ServerCountryFlagsForge() {
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> ServerCountryFlags::init);
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            ServerCountryFlags.init();
 
-        if (ClothConfigCheck.isInstalled()) {
-            ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> new ConfigScreenHandler.ConfigScreenFactory(ClothConfigScreenMaker::create));
-        }
+            if (ClothConfigCheck.isInstalled()) {
+                ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> new ConfigScreenHandler.ConfigScreenFactory(ClothConfigScreenMaker::create));
+            }
+        });
     }
 }
