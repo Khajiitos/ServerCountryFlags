@@ -27,10 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class ServerCountryFlags {
@@ -43,6 +40,7 @@ public class ServerCountryFlags {
 
 	public static HashMap<String, APIResponse> servers = new HashMap<>(); // Servers' flags
 	public static HashMap<String, Float> flagAspectRatios = new HashMap<>();
+	public static Set<String> unknownCountryCodes = new HashSet<>();
 	public static boolean flagAspectRatiosLoaded = false;
 	public static ServerRedirectHandler redirectResolver = ServerRedirectHandler.createDnsSrvRedirectHandler();
 
