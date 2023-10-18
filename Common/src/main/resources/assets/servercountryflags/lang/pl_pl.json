@@ -17,33 +17,33 @@
   "servercountryflags.config.category.locale": "Lokalizacja",
 
   "servercountryflags.config.field.flagPosition.name": "Położenia flagi",
-  "servercountryflags.config.field.flagPosition.description": "Changes the flags' positions. Available options: default, left, right, behindName",
+  "servercountryflags.config.field.flagPosition.description": "Zmienia pozycję flag. Dostępne opcje: default, left, right, behindName",
 
-  "servercountryflags.config.field.flagBorder.name": "Flag Border",
-  "servercountryflags.config.field.flagBorder.description": "Displays a border around flags",
+  "servercountryflags.config.field.flagBorder.name": "Obramowanie",
+  "servercountryflags.config.field.flagBorder.description": "Wyświetla obramowanie dookoła flag",
 
-  "servercountryflags.config.field.borderColor.name": "Border Color",
-  "servercountryflags.config.field.borderColor.description": "Border color around flags",
+  "servercountryflags.config.field.borderColor.name": "Kolor obramowania",
+  "servercountryflags.config.field.borderColor.description": "Kolor obramowania dookoła flag",
 
-  "servercountryflags.config.field.reloadOnRefresh.name": "Reload on Refresh",
-  "servercountryflags.config.field.reloadOnRefresh.description": "Forces flags to be reloaded when the server list is refreshed",
+  "servercountryflags.config.field.reloadOnRefresh.name": "Reset przy odświeżeniu",
+  "servercountryflags.config.field.reloadOnRefresh.description": "Flagi zostaną przeładowane po odświeżeniu listy serwerów",
 
-  "servercountryflags.config.field.showDistance.name": "Show Distance",
-  "servercountryflags.config.field.showDistance.description": "Shows the approximate distance between the server and you when you hover over a flag",
+  "servercountryflags.config.field.showDistance.name": "Pokazuj dystans",
+  "servercountryflags.config.field.showDistance.description": "Pokazuje szacowany dystant pomiędzy Tobą a serwerem gdy myszka najeżdza na flagę",
 
-  "servercountryflags.config.field.useKm.name": "Use Kilometers",
-  "servercountryflags.config.field.useKm.description": "Uses kilometers instead of miles",
+  "servercountryflags.config.field.useKm.name": "Używaj kilometrów",
+  "servercountryflags.config.field.useKm.description": "Używa kilometrów zamiast mil",
 
-  "servercountryflags.config.field.forceEnglish.name": "Force English",
-  "servercountryflags.config.field.forceEnglish.description": "Forces the API results to be in English instead of your in-game language",
+  "servercountryflags.config.field.forceEnglish.name": "Używaj angielskiego",
+  "servercountryflags.config.field.forceEnglish.description": "Sprawia, że odpowiedzi od API są w języku angielskim zamiast języka ustawionego w grze",
 
-  "servercountryflags.config.field.displayUnknownFlag.name": "Display Unknown Flag",
-  "servercountryflags.config.field.displayUnknownFlag.description": "Displays the unknown flag when we don't have data about the server yet",
+  "servercountryflags.config.field.displayUnknownFlag.name": "Wyświetlaj nieznaną flagę",
+  "servercountryflags.config.field.displayUnknownFlag.description": "Wyświetla nieznaną flagę gdy jeszcze nie mamy informacji o położeniu serwera",
 
   "servercountryflags.config.field.displayCooldownFlag.name": "Display Cooldown Flag",
   "servercountryflags.config.field.displayCooldownFlag.description": "Displays a timeout flag when we have an API cooldown",
 
-  "servercountryflags.config.field.showDistrict.name": "Show District",
+  "servercountryflags.config.field.showDistrict.name": "Pokazuj dzielnicę",
   "servercountryflags.config.field.showDistrict.description": "Shows the district of the location too, if available",
 
   "servercountryflags.config.field.showISP.name": "Show ISP",
