@@ -29,7 +29,7 @@
   "servercountryflags.config.field.reloadOnRefresh.description": "Flagi zostaną przeładowane po odświeżeniu listy serwerów",
 
   "servercountryflags.config.field.showDistance.name": "Pokazuj dystans",
-  "servercountryflags.config.field.showDistance.description": "Pokazuje szacowany dystant pomiędzy Tobą a serwerem gdy myszka najeżdza na flagę",
+  "servercountryflags.config.field.showDistance.description": "Pokazuje szacowany dystans pomiędzy Tobą a serwerem gdy myszka najeżdza na flagę",
 
   "servercountryflags.config.field.useKm.name": "Używaj kilometrów",
   "servercountryflags.config.field.useKm.description": "Używa kilometrów zamiast mil",
@@ -40,24 +40,24 @@
   "servercountryflags.config.field.displayUnknownFlag.name": "Wyświetlaj nieznaną flagę",
   "servercountryflags.config.field.displayUnknownFlag.description": "Wyświetla nieznaną flagę gdy jeszcze nie mamy informacji o położeniu serwera",
 
-  "servercountryflags.config.field.displayCooldownFlag.name": "Display Cooldown Flag",
-  "servercountryflags.config.field.displayCooldownFlag.description": "Displays a timeout flag when we have an API cooldown",
+  "servercountryflags.config.field.displayCooldownFlag.name": "Wyświetlaj flagę cooldown",
+  "servercountryflags.config.field.displayCooldownFlag.description": "Wyświetla flagę cooldown gdy API \"musi odpocząć\"",
 
   "servercountryflags.config.field.showDistrict.name": "Pokazuj dzielnicę",
-  "servercountryflags.config.field.showDistrict.description": "Shows the district of the location too, if available",
+  "servercountryflags.config.field.showDistrict.description": "Pokazuje dzielnicę lokacji, gdy jest dostępna",
 
-  "servercountryflags.config.field.showISP.name": "Show ISP",
-  "servercountryflags.config.field.showISP.description": "Shows the ISP of the host, if available",
+  "servercountryflags.config.field.showISP.name": "Pokazuj ISP (usługodawcę internetu)",
+  "servercountryflags.config.field.showISP.description": "Pokazuje ISP serwera, gdy ta informacja jest dostępna",
 
-  "servercountryflags.config.field.mapButton.name": "Map Button",
-  "servercountryflags.config.field.mapButton.description": "Shows a map button in the server list which opens the server map",
+  "servercountryflags.config.field.mapButton.name": "Przycisk mapy",
+  "servercountryflags.config.field.mapButton.description": "Pokazuje przycisk mapy w liście serwerów, który otwiera mapę serwerów",
 
-  "servercountryflags.config.field.mapButtonRight.name": "Map Button on the Right Side",
-  "servercountryflags.config.field.mapButtonRight.description": "Decides whether the map button should be on the right side or the left side",
+  "servercountryflags.config.field.mapButtonRight.name": "Przycisk mapy po prawej stronie",
+  "servercountryflags.config.field.mapButtonRight.description": "Decyduje, czy przycisk mapy jest po prawej stronie, czy lewej stronie",
 
-  "servercountryflags.config.field.showHomeOnMap.name": "Show Home on Map",
-  "servercountryflags.config.field.showHomeOnMap.description": "Shows your location on the server map too",
+  "servercountryflags.config.field.showHomeOnMap.name": "Pokazuj dom na mapie",
+  "servercountryflags.config.field.showHomeOnMap.description": "Pokazuje też Twoją lokalizację na mapie serwerów",
 
-  "servercountryflags.config.field.resolveRedirects.name": "Resolve SRV Redirects",
-  "servercountryflags.config.field.resolveRedirects.description": "Uses the redirected IP (if present) instead of just the resolved IP"
+  "servercountryflags.config.field.resolveRedirects.name": "Rozwiązuj przekierowywania SRV",
+  "servercountryflags.config.field.resolveRedirects.description": "Używa przekierowanego IP (jeśli dostępne) zamiast po prostu IP z DNS"
 }
