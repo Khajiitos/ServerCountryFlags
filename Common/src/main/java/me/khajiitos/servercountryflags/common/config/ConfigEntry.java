@@ -9,6 +9,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ConfigEntry {
     String[] stringValues() default {};
+    boolean stringValuesTranslatable() default true;
     String configCategory() default "servercountryflags.config.category.miscellaneous";
     Constraints[] constraints() default {};
 }
