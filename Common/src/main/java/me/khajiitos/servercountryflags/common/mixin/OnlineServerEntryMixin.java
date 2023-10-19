@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import me.khajiitos.servercountryflags.common.ServerCountryFlags;
 import me.khajiitos.servercountryflags.common.config.Config;
 import me.khajiitos.servercountryflags.common.util.APIResponse;
+import me.khajiitos.servercountryflags.common.util.FlagPosition;
 import me.khajiitos.servercountryflags.common.util.LocationInfo;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -45,7 +46,7 @@ public class OnlineServerEntryMixin {
         }
 
         originalName = this.serverData.name;
-        if (Config.cfg.flagPosition.equalsIgnoreCase("behindName")) {
+        if (Config.cfg.flagPosition == FlagPosition.BEHIND_NAME) {
             this.serverData.name = "";
         }
     }
@@ -64,7 +65,7 @@ public class OnlineServerEntryMixin {
         if (apiResponse != null) {
             locationInfo = apiResponse.locationInfo();
             if (apiResponse.cooldown()) {
-                if (!Config.cfg.displayCooldownFlag && Config.cfg.flagPosition.equalsIgnoreCase("behindname")) {
+                if (!Config.cfg.displayCooldownFlag && Config.cfg.flagPosition == FlagPosition.BEHIND_NAME) {
                     this.serverData.name = originalName;
                     context.drawString(Minecraft.getInstance().font, this.serverData.name, x + 35, y + 1, 16777215, false);
                     return;
@@ -72,7 +73,7 @@ public class OnlineServerEntryMixin {
                 toolTip = Component.translatable("servercountryflags.locationInfo.cooldown");
                 countryCode = "timeout";
             } else if (apiResponse.unknown()) {
-                if (!Config.cfg.displayUnknownFlag && Config.cfg.flagPosition.equalsIgnoreCase("behindname")) {
+                if (!Config.cfg.displayUnknownFlag && Config.cfg.flagPosition == FlagPosition.BEHIND_NAME) {
                     this.serverData.name = originalName;
                     context.drawString(Minecraft.getInstance().font, this.serverData.name, x + 35, y + 1, 16777215, false);
                     return;
@@ -84,7 +85,7 @@ public class OnlineServerEntryMixin {
                 countryCode = locationInfo.countryCode;
             }
         } else {
-            if (!Config.cfg.displayUnknownFlag && Config.cfg.flagPosition.equalsIgnoreCase("behindname")) {
+            if (!Config.cfg.displayUnknownFlag && Config.cfg.flagPosition == FlagPosition.BEHIND_NAME) {
                 this.serverData.name = originalName;
                 context.drawString(Minecraft.getInstance().font, this.serverData.name, x + 35, y + 1, 16777215, false);
                 return;
@@ -111,16 +112,16 @@ public class OnlineServerEntryMixin {
         int width = (int)(aspect * height);
         int startingX, startingY;
 
-        switch (Config.cfg.flagPosition.toLowerCase()) {
-            case "left" -> {
+        switch (Config.cfg.flagPosition) {
+            case LEFT -> {
                 startingX = x - width - 6;
                 startingY = y + (entryHeight / 2) - (height / 2);
             }
-            case "right" -> {
+            case RIGHT -> {
                 startingX = x + entryWidth + 10;
                 startingY = y + (entryHeight / 2) - (height / 2);
             }
-            case "behindname" -> {
+            case BEHIND_NAME -> {
                 height = 8;
                 width = (int) (aspect * height);
                 startingX = x + 35;

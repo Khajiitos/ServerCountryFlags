@@ -68,10 +68,11 @@ public class ClothConfigScreenMaker {
                         .setSaveConsumer(newValue -> setCfgBoolean(field, newValue))
                         .build());
             } else if (field.getType() == String.class) {
-                if (annotation.stringValues() != null) {
-                    category.addEntry(entryBuilder.startStringDropdownMenu(name, (String)field.get(Config.cfg))
+                if (annotation.stringValues().length != 0) {
+                    category.addEntry(entryBuilder.startStringDropdownMenu(name, (String)field.get(Config.cfg), !annotation.stringValuesTranslatable() ? Component::literal : s -> Component.translatable(String.format("servercountryflags.config.field.%s.value.%s", fieldName, s)))
                             .setSelections(List.of(annotation.stringValues()))
                             .setTooltip(description)
+                            .setSuggestionMode(true)
                             .setDefaultValue((String)field.get(Config.DEFAULT))
                             .setSaveConsumer(newValue -> setCfgString(field, newValue))
                             .build());
@@ -88,6 +89,13 @@ public class ClothConfigScreenMaker {
                                 .setTooltip(description)
                                 .setDefaultValue(((Color)field.get(Config.DEFAULT)).toARGB())
                                 .setSaveConsumer(newValue -> setCfgColor(field, newValue))
+                        .build());
+            } else if (field.getType().isEnum() && field.get(Config.cfg) instanceof Enum<?> enumValue) {
+                category.addEntry(entryBuilder.startEnumSelector(name, (Class<Enum<?>>) enumValue.getDeclaringClass(), enumValue)
+                                .setEnumNameProvider(anEnum -> Component.translatable(String.format("servercountryflags.config.field.%s.value.%s", fieldName, anEnum.toString())))
+                                .setTooltip(description)
+                                .setDefaultValue((Enum<?>) field.get(Config.DEFAULT))
+                                .setSaveConsumer(newValue -> setCfgEnum(field, newValue))
                         .build());
             }
         } catch (IllegalAccessException e) {
@@ -122,6 +130,14 @@ public class ClothConfigScreenMaker {
     private static void setCfgColor(Field field, int color) {
         try {
             field.set(Config.cfg, Color.fromARGB(color));
+        } catch (IllegalAccessException e) {
+            ServerCountryFlags.LOGGER.error("Failed to set value to a field", e);
+        }
+    }
+
+    private static void setCfgEnum(Field field, Enum<?> enumValue) {
+        try {
+            field.set(Config.cfg, enumValue);
         } catch (IllegalAccessException e) {
             ServerCountryFlags.LOGGER.error("Failed to set value to a field", e);
         }
