@@ -12,6 +12,8 @@
   "servercountryflags.config.category.preferences": "Preferences",
   "servercountryflags.config.category.locale": "Locale",
 
+  "servercountryflags.config.header": "Server Country Flags Config",
+
   "servercountryflags.config.field.flagPosition.name": "Flag Position",
   "servercountryflags.config.field.flagPosition.description": "Changes the flags' positions. Available options: default, left, right, behindName",
   "servercountryflags.config.field.flagPosition.value.behindName": "Behind Name",
