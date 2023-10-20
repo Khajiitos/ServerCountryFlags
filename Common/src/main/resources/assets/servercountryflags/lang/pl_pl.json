@@ -8,10 +8,6 @@
   "servercountryflags.servermap.title": "Mapa serwerów",
   "servercountryflags.servermap.home": "Dom",
 
-  "servercountryflags.config.header": "Server Country Flags - Konfiguracja",
-  "servercountryflags.config.properties_file": "Plik konfiguracyjny Server Country Flags",
-  "servercountryflags.config.field_descriptions": "Opisy pól: %s",
-
   "servercountryflags.config.category.border": "Obramowania",
   "servercountryflags.config.category.preferences": "Preferencje",
   "servercountryflags.config.category.locale": "Lokalizacja",

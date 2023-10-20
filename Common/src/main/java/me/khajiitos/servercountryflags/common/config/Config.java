@@ -2,10 +2,10 @@ package me.khajiitos.servercountryflags.common.config;
 
 import me.khajiitos.servercountryflags.common.ServerCountryFlags;
 import me.khajiitos.servercountryflags.common.util.Color;
+import me.khajiitos.servercountryflags.common.util.FlagPosition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.language.LanguageManager;
 
 import java.io.*;
@@ -59,8 +59,8 @@ public class Config {
         @ConfigEntry(configCategory = "servercountryflags.config.category.preferences")
         public boolean resolveRedirects = true;
 
-        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences")
-        public String flagPosition = "behindName";
+        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences", stringValues = {"default", "left", "right", "behindName"})
+        public FlagPosition flagPosition = FlagPosition.BEHIND_NAME;
     }
 
     private static File configDirectory;
@@ -86,7 +86,7 @@ public class Config {
         Properties properties = new Properties();
         boolean loadedProperties = false;
         try {
-            properties.load(new FileInputStream(propertiesFile));
+            properties.load(new FileReader(propertiesFile));
             loadedProperties = true;
         } catch (FileNotFoundException e) {
             ServerCountryFlags.LOGGER.info("Our properties file doesn't exist, creating it");
@@ -130,6 +130,13 @@ public class Config {
                             field.setInt(cfg, value);
                         } else if (field.getType() == float.class) {
                             field.setFloat(cfg, Float.parseFloat(propertiesValue));
+                        } else if (field.getType().isEnum()) {
+                            for (Object enumConstant : field.getType().getEnumConstants()) {
+                                if (enumConstant.toString().equals(propertiesValue)) {
+                                    field.set(cfg, enumConstant);
+                                    break;
+                                }
+                            }
                         } else if (field.getType() == Color.class) {
                             field.set(cfg, Color.fromString(propertiesValue));
                         } else {
@@ -152,6 +159,8 @@ public class Config {
         afterLoad();
     }
 
+    // We just want to suppress the "condition always true" warning
+    @SuppressWarnings("all")
     private static void afterLoad() {
         if (cfg.forceEnglish) {
             ServerCountryFlags.updateAPILanguage(null);
@@ -174,18 +183,11 @@ public class Config {
     public static void save() {
         Properties properties = new Properties();
 
-        StringBuilder fieldsDescriptions = new StringBuilder();
-
         for (Field field : Config.Values.class.getDeclaredFields()) {
             ConfigEntry annotation = field.getAnnotation(ConfigEntry.class);
             if (annotation != null) {
                 try {
-                    String fieldName = field.getName();
-                    String translationDescriptionName = String.format("servercountryflags.config.field.%s.description", fieldName);
-                    if (I18n.exists(translationDescriptionName)) {
-                        fieldsDescriptions.append("\n").append(fieldName).append(" - ").append(translationDescriptionName);
-                    }
-                    properties.setProperty(fieldName, String.valueOf(field.get(cfg)));
+                    properties.setProperty(field.getName(), String.valueOf(field.get(cfg)));
                 } catch (IllegalAccessException e) {
                     ServerCountryFlags.LOGGER.warn("Bug: can't access a config field");
                 }
@@ -193,11 +195,7 @@ public class Config {
         }
 
         try {
-            String comments = I18n.get("servercountryflags.config.properties_file");
-            if (!fieldsDescriptions.isEmpty()) {
-                comments += "\n" + I18n.get("servercountryflags.config.field_descriptions", fieldsDescriptions);
-            }
-            properties.store(new FileOutputStream(propertiesFile), comments);
+            properties.store(new BufferedWriter(new FileWriter(propertiesFile)), "Server Country Flags properties file");
         } catch (FileNotFoundException e) {
             ServerCountryFlags.LOGGER.error("Couldn't save the properties file because it doesn't exist");
         } catch (IOException e) {
@@ -206,6 +204,7 @@ public class Config {
         }
     }
 
+    @SuppressWarnings("BusyWait")
     private static void registerWatchService() {
         try {
             watchService = FileSystems.getDefault().newWatchService();

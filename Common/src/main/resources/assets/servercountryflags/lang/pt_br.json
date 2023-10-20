@@ -8,10 +8,6 @@
   "servercountryflags.servermap.title": "Mapa do servidor",
   "servercountryflags.servermap.home": "Casa",
 
-  "servercountryflags.config.header": "Server Country Flags Config",
-  "servercountryflags.config.properties_file": "Server Country Flags properties file",
-  "servercountryflags.config.field_descriptions": "Field descriptions: %s",
-
   "servercountryflags.config.category.border": "Border",
   "servercountryflags.config.category.preferences": "Preferences",
   "servercountryflags.config.category.locale": "Locale",
