@@ -9,6 +9,7 @@ import me.khajiitos.servercountryflags.common.util.FlagPosition;
 import me.khajiitos.servercountryflags.common.util.LocationInfo;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
 import net.minecraft.client.multiplayer.ServerData;
@@ -87,7 +88,8 @@ public class OnlineServerEntryMixin {
         } else {
             if (!Config.cfg.displayUnknownFlag && Config.cfg.flagPosition == FlagPosition.BEHIND_NAME) {
                 this.serverData.name = originalName;
-                Minecraft.getInstance().font.draw(poseStack, this.serverData.name, x + 35, y + 1, 16777215);                return;
+                Minecraft.getInstance().font.draw(poseStack, this.serverData.name, x + 35, y + 1, 16777215);
+                return;
             }
             toolTip = Component.translatable("servercountryflags.locationInfo.unknown");
             countryCode = "unknown";
@@ -133,7 +135,7 @@ public class OnlineServerEntryMixin {
             }
         }
 
-        ResourceLocation textureId = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/gui/flags/" + countryCode + ".png");
+        ResourceLocation textureId = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/flags/" + countryCode + ".png");
 
         RenderSystem.enableBlend();
         RenderSystem.setShaderTexture(0, textureId);
