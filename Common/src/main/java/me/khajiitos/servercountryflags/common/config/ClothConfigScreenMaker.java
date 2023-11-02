@@ -71,7 +71,7 @@ public class ClothConfigScreenMaker {
                         .build());
             } else if (field.getType() == String.class) {
                 if (annotation.stringValues().length != 0) {
-                    category.addEntry(entryBuilder.startStringDropdownMenu(name, (String)field.get(Config.cfg), !annotation.stringValuesTranslatable() ? Component::literal : s -> Component.translatable(String.format("servercountryflags.config.field.%s.value.%s", fieldName, s)))
+                    category.addEntry(entryBuilder.startStringDropdownMenu(name, (String)field.get(Config.cfg), !annotation.stringValuesTranslatable() ? TextComponent::new : s -> new TranslatableComponent(String.format("servercountryflags.config.field.%s.value.%s", fieldName, s)))
                             .setSelections(List.of(annotation.stringValues()))
                             .setTooltip(description)
                             .setSuggestionMode(true)
@@ -94,7 +94,7 @@ public class ClothConfigScreenMaker {
                         .build());
             } else if (field.getType().isEnum() && field.get(Config.cfg) instanceof Enum<?> enumValue) {
                 category.addEntry(entryBuilder.startEnumSelector(name, (Class<Enum<?>>) enumValue.getDeclaringClass(), enumValue)
-                                .setEnumNameProvider(anEnum -> Component.translatable(String.format("servercountryflags.config.field.%s.value.%s", fieldName, anEnum.toString())))
+                                .setEnumNameProvider(anEnum -> new TranslatableComponent(String.format("servercountryflags.config.field.%s.value.%s", fieldName, anEnum.toString())))
                                 .setTooltip(description)
                                 .setDefaultValue((Enum<?>) field.get(Config.DEFAULT))
                                 .setSaveConsumer(newValue -> setCfgEnum(field, newValue))
