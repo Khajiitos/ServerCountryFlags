@@ -6,7 +6,9 @@
   "client": [
     "JoinMultiplayerScreenMixin",
     "LanguageManagerMixin",
-    "OnlineServerEntryMixin"
+    "OnlineServerEntryMixin",
+    "serverbrowser.BrowsedEntryMixin",
+    "serverbrowser.ServerBrowserListMixin"
   ],
   "injectors": {
     "defaultRequire": 1

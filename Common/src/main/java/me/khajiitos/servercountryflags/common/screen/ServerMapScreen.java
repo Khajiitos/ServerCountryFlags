@@ -235,6 +235,14 @@ public class ServerMapScreen extends Screen {
         Minecraft.getInstance().setScreen(this.parent);
     }
 
+    private static boolean doesServerListHaveServer(String serverIp) {
+        if (ServerCountryFlags.serverList == null) {
+            return false;
+        }
+
+        return ServerCountryFlags.serverList.get(serverIp) != null;
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -247,7 +255,7 @@ public class ServerMapScreen extends Screen {
         }
 
         for (Map.Entry<String, APIResponse> entry : ServerCountryFlags.servers.entrySet()) {
-            if (entry.getValue().locationInfo() != null) {
+            if (doesServerListHaveServer(entry.getKey()) && entry.getValue().locationInfo() != null) {
                 addPoint(entry.getKey(), entry.getValue().locationInfo());
             }
         }
