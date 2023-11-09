@@ -42,7 +42,7 @@ public class ServerBrowserListMixin {
     }
 
     @Inject(at = @At("TAIL"), method = "addEntries", remap = false)
-    public void addEntries(JsonElement jsonElement, boolean toTop, CallbackInfo ci) {
+    public void queryServers(JsonElement jsonElement, boolean toTop, CallbackInfo ci) {
         if (!Config.cfg.serverBrowserIntegration) {
             return;
         }
