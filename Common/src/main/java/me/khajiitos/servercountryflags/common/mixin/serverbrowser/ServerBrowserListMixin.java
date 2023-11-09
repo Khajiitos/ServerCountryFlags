@@ -2,7 +2,6 @@ package me.khajiitos.servercountryflags.common.mixin.serverbrowser;
 
 
 import com.epherical.serverbrowser.client.list.ServerBrowserList;
-import com.google.gson.JsonElement;
 import me.khajiitos.servercountryflags.common.ServerCountryFlags;
 import me.khajiitos.servercountryflags.common.config.Config;
 import me.khajiitos.servercountryflags.common.util.APIResponse;
@@ -41,8 +40,8 @@ public class ServerBrowserListMixin {
         servercountryflags$updateLocationInfos(entries);
     }
 
-    @Inject(at = @At("TAIL"), method = "addEntries", remap = false)
-    public void addEntries(JsonElement jsonElement, boolean toTop, CallbackInfo ci) {
+    @Inject(at = @At("TAIL"), method = "queryServers", remap = false)
+    public void queryServers(CallbackInfo ci) {
         if (!Config.cfg.serverBrowserIntegration) {
             return;
         }
