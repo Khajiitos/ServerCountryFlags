@@ -12,10 +12,7 @@ import me.khajiitos.servercountryflags.common.util.FlagRenderInfo;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.resources.ResourceLocation;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Pseudo;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -28,6 +25,14 @@ public class BrowsedEntryMixin {
     private ServerData serverData;
 
     @Shadow(remap = false) @Final private ServerBrowserScreen screen;
+
+    @Unique
+    private static void servercountryflags$renderOutline(PoseStack poseStack, int x, int y, int width, int height, int color) {
+        GuiComponent.fill(poseStack, x, y, x + width, y + 1, color);
+        GuiComponent.fill(poseStack, x, y + height - 1, x + width, y + height, color);
+        GuiComponent.fill(poseStack, x, y + 1, x + 1, y + height - 1, color);
+        GuiComponent.fill(poseStack, x + width - 1, y + 1, x + width, y + height - 1, color);
+    }
 
     // Suppressing all warnings - don't know what the exact name is
     // Minecraft Dev extension complains that it can't find the "render" function,
@@ -92,7 +97,7 @@ public class BrowsedEntryMixin {
         GuiComponent.blit(poseStack, startingX, startingY, 0.0F, 0.0F, width, height, width, height);
 
         if (Config.cfg.flagBorder) {
-            GuiComponent.renderOutline(poseStack, startingX - 1, startingY - 1, width + 2, height + 2, Config.cfg.borderColor.toARGB());
+            servercountryflags$renderOutline(poseStack, startingX - 1, startingY - 1, width + 2, height + 2, Config.cfg.borderColor.toARGB());
         }
 
         RenderSystem.disableBlend();
