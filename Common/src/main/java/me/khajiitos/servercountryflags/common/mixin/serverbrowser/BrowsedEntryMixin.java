@@ -8,11 +8,8 @@ import me.khajiitos.servercountryflags.common.config.Config;
 import me.khajiitos.servercountryflags.common.util.APIResponse;
 import me.khajiitos.servercountryflags.common.util.FlagPosition;
 import me.khajiitos.servercountryflags.common.util.FlagRenderInfo;
-import me.khajiitos.servercountryflags.common.util.LocationInfo;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,9 +19,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Pseudo
 @Mixin(ServerBrowserList.BrowsedEntry.class)
@@ -105,22 +99,7 @@ public class BrowsedEntryMixin {
 
         RenderSystem.disableBlend();
         if (mouseX >= startingX && mouseX <= startingX + width && mouseY >= startingY && mouseY <= startingY + height) {
-            List<Component> toolTipList = new ArrayList<>();
-            toolTipList.add(flagRenderInfo.tooltip());
-
-            LocationInfo locationInfo = apiResponse.locationInfo();
-            if (locationInfo != null) {
-                if (Config.cfg.showISP && !locationInfo.ispName.equals("")) {
-                    toolTipList.add(Component.translatable("servercountryflags.locationInfo.isp", locationInfo.ispName));
-                }
-                if (Config.cfg.showDistance) {
-                    double distanceFromLocal = locationInfo.getDistanceFromLocal(Config.cfg.useKm);
-                    if (distanceFromLocal != -1.0) {
-                        toolTipList.add(Component.translatable("servercountryflags.locationInfo.distance", (int)distanceFromLocal, Component.translatable(Config.cfg.useKm ? "servercountryflags.locationInfo.km" : "servercountryflags.locationInfo.mi")).withStyle(ChatFormatting.ITALIC));
-                    }
-                }
-            }
-            screen.setToolTip(toolTipList);
+            screen.setToolTip(flagRenderInfo.tooltip());
         }
     }
 }
