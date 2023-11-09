@@ -9,6 +9,7 @@ import me.khajiitos.servercountryflags.common.util.APIResponse;
 import me.khajiitos.servercountryflags.common.util.FlagRenderInfo;
 import me.khajiitos.servercountryflags.common.util.LocationInfo;
 import me.khajiitos.servercountryflags.common.util.NetworkChangeDetector;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.resolver.ResolvedServerAddress;
@@ -210,20 +211,20 @@ public class ServerCountryFlags {
 	public static FlagRenderInfo getFlagRenderInfo(APIResponse apiResponse) {
 		String countryCode;
 		double aspectRatio;
-		Component tooltip;
+		List<Component> tooltip = new ArrayList<>();
 
 		if (apiResponse == null || apiResponse.unknown()) {
 			if (!Config.cfg.displayUnknownFlag) {
 				return null;
 			}
-			tooltip = Component.translatable("servercountryflags.locationInfo.unknown");
+			tooltip.add(Component.translatable("servercountryflags.locationInfo.unknown"));
 			countryCode = "unknown";
 			aspectRatio = 1.5;
 		} else if (apiResponse.cooldown()) {
 			if (!Config.cfg.displayCooldownFlag) {
 				return null;
 			}
-			tooltip = Component.translatable("servercountryflags.locationInfo.cooldown");
+			tooltip.add(Component.translatable("servercountryflags.locationInfo.cooldown"));
 			countryCode = "timeout";
 			aspectRatio = 1.5;
 		} else {
@@ -245,7 +246,18 @@ public class ServerCountryFlags {
 				}
 			}
 
-			tooltip = Component.literal((Config.cfg.showDistrict && !locationInfo.districtName.equals("") ? (locationInfo.districtName + ", ") : "") + locationInfo.cityName + ", " + locationInfo.countryName);
+			tooltip.add(Component.literal((Config.cfg.showDistrict && !locationInfo.districtName.equals("") ? (locationInfo.districtName + ", ") : "") + locationInfo.cityName + ", " + locationInfo.countryName));
+
+			if (Config.cfg.showISP && !locationInfo.ispName.equals("")) {
+				tooltip.add(Component.translatable("servercountryflags.locationInfo.isp", locationInfo.ispName));
+			}
+
+			if (Config.cfg.showDistance) {
+				double distanceFromLocal = locationInfo.getDistanceFromLocal(Config.cfg.useKm);
+				if (distanceFromLocal != -1.0) {
+					tooltip.add(Component.translatable("servercountryflags.locationInfo.distance", (int)distanceFromLocal, Component.translatable(Config.cfg.useKm ? "servercountryflags.locationInfo.km" : "servercountryflags.locationInfo.mi")).withStyle(ChatFormatting.ITALIC));
+				}
+			}
 		}
 
 		return new FlagRenderInfo(countryCode, aspectRatio, tooltip);
