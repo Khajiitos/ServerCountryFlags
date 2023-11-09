@@ -54,12 +54,19 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     maven { url "https://maven.shedaniel.me/" }
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     implementation fg.deobf("me.shedaniel.cloth:cloth-config-forge:${cloth_config_version}")
+    implementation fg.deobf("curse.maven:server-browser-825617:${server_browser_artifact_id_forge}")
 
     implementation project(':Common')
 }

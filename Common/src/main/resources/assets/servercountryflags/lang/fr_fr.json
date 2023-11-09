@@ -59,5 +59,8 @@
   "servercountryflags.config.field.showHomeOnMap.description": "Shows your location on the server map too",
 
   "servercountryflags.config.field.resolveRedirects.name": "Resolve SRV Redirects",
-  "servercountryflags.config.field.resolveRedirects.description": "Uses the redirected IP (if present) instead of just the resolved IP"
+  "servercountryflags.config.field.resolveRedirects.description": "Uses the redirected IP (if present) instead of just the resolved IP",
+
+  "servercountryflags.config.field.serverBrowserIntegration.name": "Server Browser Integration",
+  "servercountryflags.config.field.serverBrowserIntegration.description": "Displays flags in the Server Browser, if that mod is installed"
 }

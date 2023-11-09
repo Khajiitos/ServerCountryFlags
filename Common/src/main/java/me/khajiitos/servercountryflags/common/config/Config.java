@@ -64,6 +64,9 @@ public class Config {
 
         @ConfigEntry(configCategory = "servercountryflags.config.category.preferences", stringValues = {"default", "left", "right", "behindName"})
         public FlagPosition flagPosition = FlagPosition.BEHIND_NAME;
+
+        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences", requiredMod = "serverbrowser")
+        public boolean serverBrowserIntegration = true;
     }
 
     private static File configDirectory;

@@ -9,9 +9,17 @@ minecraft {
 
 repositories {
     maven { url "https://maven.shedaniel.me/" }
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 dependencies {
     compileOnly 'org.spongepowered:mixin:0.8.5'
     compileOnly "me.shedaniel.cloth:cloth-config-forge:${cloth_config_version}"
+
+    compileOnly "curse.maven:server-browser-825617:${server_browser_artifact_id_forge}"
 }
