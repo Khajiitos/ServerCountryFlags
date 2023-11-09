@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.NativeImage;
 import me.khajiitos.servercountryflags.common.config.Config;
 import me.khajiitos.servercountryflags.common.util.APIResponse;
+import me.khajiitos.servercountryflags.common.util.FlagRenderInfo;
 import me.khajiitos.servercountryflags.common.util.LocationInfo;
 import me.khajiitos.servercountryflags.common.util.NetworkChangeDetector;
 import net.minecraft.client.Minecraft;
@@ -14,6 +15,7 @@ import net.minecraft.client.multiplayer.resolver.ResolvedServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerAddressResolver;
 import net.minecraft.client.multiplayer.resolver.ServerRedirectHandler;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -41,7 +43,6 @@ public class ServerCountryFlags {
 	public static HashMap<String, APIResponse> servers = new HashMap<>(); // Servers' flags
 	public static HashMap<String, Float> flagAspectRatios = new HashMap<>();
 	public static Set<String> unknownCountryCodes = new HashSet<>();
-	public static boolean flagAspectRatiosLoaded = false;
 	public static ServerRedirectHandler redirectResolver = ServerRedirectHandler.createDnsSrvRedirectHandler();
 
 	public static LocationInfo localLocation = null;
@@ -79,7 +80,6 @@ public class ServerCountryFlags {
 						LOGGER.error(e.getMessage());
 					}
 				}
-				flagAspectRatiosLoaded = true;
 			});
 			flagThread.setName("Flag load thread");
 			flagThread.start();
@@ -208,5 +208,49 @@ public class ServerCountryFlags {
 				}
 			}
 		});
+	}
+
+	public static FlagRenderInfo getFlagRenderInfo(APIResponse apiResponse) {
+		String countryCode;
+		double aspectRatio;
+		Component tooltip;
+
+		if (apiResponse == null || apiResponse.unknown()) {
+			if (!Config.cfg.displayUnknownFlag) {
+				return null;
+			}
+			tooltip = Component.translatable("servercountryflags.locationInfo.unknown");
+			countryCode = "unknown";
+			aspectRatio = 1.5;
+		} else if (apiResponse.cooldown()) {
+			if (!Config.cfg.displayCooldownFlag) {
+				return null;
+			}
+			tooltip = Component.translatable("servercountryflags.locationInfo.cooldown");
+			countryCode = "timeout";
+			aspectRatio = 1.5;
+		} else {
+			LocationInfo locationInfo = apiResponse.locationInfo();
+			if (ServerCountryFlags.flagAspectRatios.containsKey(locationInfo.countryCode)) {
+				countryCode = locationInfo.countryCode;
+				aspectRatio = ServerCountryFlags.flagAspectRatios.get(countryCode);
+			} else {
+				if (!ServerCountryFlags.unknownCountryCodes.contains(locationInfo.countryCode)) {
+					ServerCountryFlags.LOGGER.error("Unknown country code: " + locationInfo.countryCode);
+					ServerCountryFlags.unknownCountryCodes.add(locationInfo.countryCode);
+				}
+
+				if (Config.cfg.displayUnknownFlag) {
+					countryCode = "unknown";
+					aspectRatio = 1.5;
+				} else {
+					return null;
+				}
+			}
+
+			tooltip = Component.literal((Config.cfg.showDistrict && !locationInfo.districtName.equals("") ? (locationInfo.districtName + ", ") : "") + locationInfo.cityName + ", " + locationInfo.countryName);
+		}
+
+		return new FlagRenderInfo(countryCode, aspectRatio, tooltip);
 	}
 }

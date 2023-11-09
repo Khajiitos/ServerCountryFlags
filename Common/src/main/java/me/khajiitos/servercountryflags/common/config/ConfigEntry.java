@@ -12,4 +12,5 @@ public @interface ConfigEntry {
     boolean stringValuesTranslatable() default true;
     String configCategory() default "servercountryflags.config.category.miscellaneous";
     Constraints[] constraints() default {};
+    String requiredMod() default "";
 }
