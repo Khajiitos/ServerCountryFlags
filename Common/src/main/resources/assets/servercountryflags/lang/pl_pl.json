@@ -61,5 +61,8 @@
   "servercountryflags.config.field.showHomeOnMap.description": "Pokazuje też Twoją lokalizację na mapie serwerów",
 
   "servercountryflags.config.field.resolveRedirects.name": "Rozwiązuj przekierowywania SRV",
-  "servercountryflags.config.field.resolveRedirects.description": "Używa przekierowanego IP (jeśli dostępne) zamiast po prostu IP z DNS"
+  "servercountryflags.config.field.resolveRedirects.description": "Używa przekierowanego IP (jeśli dostępne) zamiast po prostu IP z DNS",
+
+  "servercountryflags.config.field.serverBrowserIntegration.name": "Integracja z Server Browser",
+  "servercountryflags.config.field.serverBrowserIntegration.description": "Wyświetla flagi w wyszukiwarce serwerów z moda Server Browser, jeśli jest zainstalowany"
 }

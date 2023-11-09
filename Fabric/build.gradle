@@ -19,6 +19,12 @@ loom {
 repositories {
     maven { url "https://maven.shedaniel.me/" }
     maven { url "https://maven.terraformersmc.com/releases/" }
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 dependencies {
@@ -33,6 +39,8 @@ dependencies {
     }
 
     modImplementation "com.terraformersmc:modmenu:${modmenu_version}"
+
+    modImplementation "curse.maven:server-browser-825617:${server_browser_artifact_id_fabric}"
 
     implementation project(":Common")
 }

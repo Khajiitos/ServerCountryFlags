@@ -1,5 +1,7 @@
-package me.khajiitos.servercountryflags.common.mixin;
+package me.khajiitos.servercountryflags.common.mixin.serverbrowser;
 
+import com.epherical.serverbrowser.client.list.ServerBrowserList;
+import com.epherical.serverbrowser.client.screen.ServerBrowserScreen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import me.khajiitos.servercountryflags.common.ServerCountryFlags;
@@ -9,19 +11,14 @@ import me.khajiitos.servercountryflags.common.util.FlagPosition;
 import me.khajiitos.servercountryflags.common.util.FlagRenderInfo;
 import me.khajiitos.servercountryflags.common.util.LocationInfo;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
-import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -30,25 +27,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mixin(ServerSelectionList.OnlineServerEntry.class)
-public class OnlineServerEntryMixin {
-
-    @Shadow
-    @Final
+@Pseudo
+@Mixin(ServerBrowserList.BrowsedEntry.class)
+public class BrowsedEntryMixin {
+    @Shadow(remap = false)
     private ServerData serverData;
 
-    @Shadow
-    @Final
-    private JoinMultiplayerScreen screen;
+    @Shadow(remap = false) @Final private ServerBrowserScreen screen;
 
-    @Unique
-    private static void servercountryflags$renderOutline(PoseStack poseStack, int x, int y, int width, int height, int color) {
-        GuiComponent.fill(poseStack, x, y, x + width, y + 1, color);
-        GuiComponent.fill(poseStack, x, y + height - 1, x + width, y + height, color);
-        GuiComponent.fill(poseStack, x, y + 1, x + 1, y + height - 1, color);
-        GuiComponent.fill(poseStack, x + width - 1, y + 1, x + width, y + height - 1, color);
-    }
-
+    // Suppressing all warnings - don't know what the exact name is
+    // Minecraft Dev extension complains that it can't find the "render" function,
+    // because the project we are working with here is obfuscated
+    // When compiling on Forge/Fabric, the mod is deobfuscated there, so it works
+    @SuppressWarnings("all")
     @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;draw(Lcom/mojang/blaze3d/vertex/PoseStack;Ljava/lang/String;FFI)I", ordinal = 0), method = "render", index = 2)
     public float serverNameX(float oldX) {
         if (Config.cfg.flagPosition == FlagPosition.BEHIND_NAME) {
@@ -63,6 +54,7 @@ public class OnlineServerEntryMixin {
         return oldX;
     }
 
+    @SuppressWarnings("all")
     @Inject(at = @At("TAIL"), method = "render")
     public void render(PoseStack poseStack, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo info) {
         APIResponse apiResponse = ServerCountryFlags.servers.get(serverData.ip);
@@ -102,7 +94,7 @@ public class OnlineServerEntryMixin {
         GuiComponent.blit(poseStack, startingX, startingY, 0.0F, 0.0F, width, height, width, height);
 
         if (Config.cfg.flagBorder) {
-            servercountryflags$renderOutline(poseStack, startingX - 1, startingY - 1, width + 2, height + 2, Config.cfg.borderColor.toARGB());
+            GuiComponent.renderOutline(poseStack, startingX - 1, startingY - 1, width + 2, height + 2, Config.cfg.borderColor.toARGB());
         }
 
         RenderSystem.disableBlend();
@@ -113,12 +105,12 @@ public class OnlineServerEntryMixin {
             LocationInfo locationInfo = apiResponse.locationInfo();
             if (locationInfo != null) {
                 if (Config.cfg.showISP && !locationInfo.ispName.equals("")) {
-                    toolTipList.add(new TranslatableComponent("servercountryflags.locationInfo.isp", locationInfo.ispName));
+                    toolTipList.add(Component.translatable("servercountryflags.locationInfo.isp", locationInfo.ispName));
                 }
                 if (Config.cfg.showDistance) {
                     double distanceFromLocal = locationInfo.getDistanceFromLocal(Config.cfg.useKm);
                     if (distanceFromLocal != -1.0) {
-                        toolTipList.add(new TranslatableComponent("servercountryflags.locationInfo.distance", (int)distanceFromLocal, new TranslatableComponent(Config.cfg.useKm ? "servercountryflags.locationInfo.km" : "servercountryflags.locationInfo.mi")).withStyle(ChatFormatting.ITALIC));
+                        toolTipList.add(Component.translatable("servercountryflags.locationInfo.distance", (int)distanceFromLocal, Component.translatable(Config.cfg.useKm ? "servercountryflags.locationInfo.km" : "servercountryflags.locationInfo.mi")).withStyle(ChatFormatting.ITALIC));
                     }
                 }
             }
