@@ -81,7 +81,7 @@ public class OnlineServerEntryMixin {
                 toolTip = Component.translatable("servercountryflags.locationInfo.unknown");
                 countryCode = "unknown";
             } else {
-                toolTip = Component.literal((Config.cfg.showDistrict && !locationInfo.districtName.equals("") ? (locationInfo.districtName + ", ") : "") + locationInfo.cityName + ", " + locationInfo.countryName);
+                toolTip = Component.literal((Config.cfg.showDistrict && locationInfo.districtName != null && !locationInfo.districtName.equals("") ? (locationInfo.districtName + ", ") : "") + locationInfo.cityName + ", " + locationInfo.countryName);
                 countryCode = locationInfo.countryCode;
             }
         } else {
@@ -148,7 +148,7 @@ public class OnlineServerEntryMixin {
             toolTipList.add(toolTip);
 
             if (locationInfo != null) {
-                if (Config.cfg.showISP && !locationInfo.ispName.equals("")) {
+                if (Config.cfg.showISP && locationInfo.ispName != null && !locationInfo.ispName.equals("")) {
                     toolTipList.add(Component.translatable("servercountryflags.locationInfo.isp", locationInfo.ispName));
                 }
                 if (Config.cfg.showDistance) {
