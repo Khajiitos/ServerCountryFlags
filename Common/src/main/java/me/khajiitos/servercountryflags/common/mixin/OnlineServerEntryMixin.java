@@ -76,7 +76,7 @@ public class OnlineServerEntryMixin {
             }
         }
 
-        ResourceLocation textureId = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/flags/" + flagRenderInfo.countryCode() + ".png");
+        ResourceLocation textureId = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/gui/flags/" + flagRenderInfo.countryCode() + ".png");
 
         RenderSystem.enableBlend();
         context.blit(textureId, startingX, startingY, 0.0F, 0.0F, width, height, width, height);
