@@ -167,7 +167,7 @@ public class ServerCountryFlags {
 	}
 
 	public static boolean isIpLocal(InetAddress address) {
-		return address.isLoopbackAddress() || address.isLinkLocalAddress() || address.isSiteLocalAddress();
+		return address.isLoopbackAddress() || address.isLinkLocalAddress() || address.isSiteLocalAddress() || address.isAnyLocalAddress();
 	}
 
 	public static void updateServerLocationInfo(String serverAddress) {
