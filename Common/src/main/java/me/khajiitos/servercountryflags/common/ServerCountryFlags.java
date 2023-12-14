@@ -1,14 +1,10 @@
 package me.khajiitos.servercountryflags.common;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.NativeImage;
 import me.khajiitos.servercountryflags.common.config.Config;
-import me.khajiitos.servercountryflags.common.util.APIResponse;
-import me.khajiitos.servercountryflags.common.util.FlagRenderInfo;
-import me.khajiitos.servercountryflags.common.util.LocationInfo;
-import me.khajiitos.servercountryflags.common.util.NetworkChangeDetector;
+import me.khajiitos.servercountryflags.common.util.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerList;
@@ -145,22 +141,12 @@ public class ServerCountryFlags {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
 			JsonElement jsonElement = JsonParser.parseReader(reader);
 
-			if (jsonElement == null) {
-				ServerCountryFlags.LOGGER.error("Received something that's not JSON");
-				return new APIResponse(APIResponse.Status.UNKNOWN, null);
-			}
-
-			if (jsonElement.isJsonObject()) {
-				return new APIResponse(APIResponse.Status.SUCCESS, new LocationInfo((JsonObject) jsonElement));
-			} else {
-				ServerCountryFlags.LOGGER.error("Received JSON element, but it's not an object: " + jsonElement);
-				return new APIResponse(APIResponse.Status.UNKNOWN, null);
-			}
+			return new APIResponse(APIResponse.Status.SUCCESS, new LocationInfo(jsonElement));
 		} catch (MalformedURLException e) {
 			ServerCountryFlags.LOGGER.error("Malformed API Url: " + apiUrlStr);
 		} catch (UnknownHostException e) {
 			ServerCountryFlags.LOGGER.error("Unknown host - no internet?");
-		} catch (IOException e) {
+		} catch (IOException | InvalidAPIResponseException e) {
 			ServerCountryFlags.LOGGER.error(e.getMessage());
 		}
 		APITimeoutManager.decrementRequestsSent();

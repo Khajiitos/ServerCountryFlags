@@ -1,5 +1,6 @@
 package me.khajiitos.servercountryflags.common.util;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.khajiitos.servercountryflags.common.ServerCountryFlags;
 
@@ -8,28 +9,26 @@ import java.util.List;
 public class LocationInfo {
     private static final double MILE_KM_RATIO = 1.609344;
 
-    public boolean success = false;
-    public String countryCode = null;
-    public String countryName = null;
-    public String cityName = null;
-    public String districtName = null;
-    public String ispName = null;
-    public double latitude = -1.0;
-    public double longitude = -1.0;
-    private double distanceFromLocal = -1.0; // in miles
+    public final String countryCode;
+    public final String countryName;
+    public final String cityName;
+    public final String districtName;
+    public final String ispName;
+    public final double latitude;
+    public final double longitude;
+    private double distanceFromLocal; // in miles
 
-    public LocationInfo(JsonObject apiObject) {
-        if (apiObject.has("status")) {
-            success = apiObject.get("status").getAsString().equals("success");
-            if (!success) {
-                ServerCountryFlags.LOGGER.error("API result isn't successful");
-                ServerCountryFlags.LOGGER.error(apiObject.toString());
-                return;
-            }
-        } else {
-            ServerCountryFlags.LOGGER.error("API Object doesn't include the field 'status'");
-            ServerCountryFlags.LOGGER.error(apiObject.toString());
-            return;
+    public LocationInfo(JsonElement apiJson) throws InvalidAPIResponseException {
+        if (apiJson == null) {
+            throw new InvalidAPIResponseException("Received something that's not JSON");
+        }
+
+        if (!(apiJson instanceof JsonObject apiObject)) {
+            throw new InvalidAPIResponseException("Received JSON element, but it's not an object");
+        }
+
+        if (!apiObject.has("status") || !apiObject.get("status").getAsString().equals("success")) {
+            throw new InvalidAPIResponseException("API result isn't successful");
         }
 
         if (apiObject.keySet().containsAll(List.of("country", "countryCode", "city", "lon", "lat", "district", "isp"))) {
@@ -43,9 +42,7 @@ public class LocationInfo {
             this.latitude = apiObject.get("lat").getAsDouble();
             this.distanceFromLocal = calculateDistanceFromLocal();
         } else {
-            ServerCountryFlags.LOGGER.error("API Object is incomplete");
-            ServerCountryFlags.LOGGER.error(apiObject.toString());
-            success = false;
+            throw new InvalidAPIResponseException("API Object is incomplete");
         }
     }
 
