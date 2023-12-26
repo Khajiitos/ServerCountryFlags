@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ServerMapScreen extends Screen {
-    public static final ResourceLocation MAP_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/gui/misc/map.jpg");
+    public static final ResourceLocation MAP_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/gui/misc/map.png");
     public static final ResourceLocation POINT_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/gui/misc/point.png");
     public static final ResourceLocation POINT_HOVERED_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/gui/misc/point_hovered.png");
     public static final ResourceLocation POINT_HOME_TEXTURE = new ResourceLocation(ServerCountryFlags.MOD_ID, "textures/gui/misc/point_home.png");
