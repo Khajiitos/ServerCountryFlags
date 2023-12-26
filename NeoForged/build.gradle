@@ -1,0 +1,117 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url = "https://repo.spongepowered.org/maven/"
+        }
+    }
+}
+
+plugins {
+    id 'idea'
+    id 'net.neoforged.gradle.userdev' version '7.0.57'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+base {
+    archivesName = mod_id + "-" + mod_version + "-" + minecraft_version_group + "-NEOFORGED"
+}
+
+runs {
+    configureEach {
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'debug'
+        modSource project.sourceSets.main
+    }
+
+    client {
+        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+    }
+
+    server {
+        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        programArgument '--nogui'
+    }
+
+    gameTestServer {
+        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+    }
+
+    data {
+        // example of overriding the workingDirectory set in configureEach above, uncomment if you want to use it
+        // workingDirectory project.file('run-data')
+
+        // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
+        programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    maven { url "https://maven.shedaniel.me/" }
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+}
+
+dependencies {
+    implementation "net.neoforged:neoforge:${neo_version}"
+
+    implementation "me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}"
+    //implementation "curse.maven:server-browser-825617:${server_browser_artifact_id_neoforged}"
+    implementation project(':Common')
+}
+
+processResources {
+    from project(":Common").sourceSets.main.resources
+
+    inputs.property "version", mod_version
+    inputs.property "neo_loader_version_range", neo_loader_version_range
+    inputs.property "neo_version_range", neo_version_range
+    inputs.property "minecraft_version_range", forge_minecraft_version_range
+
+    filesMatching("META-INF/mods.toml") {
+        expand  version: mod_version,
+                neo_loader_version_range: neo_loader_version_range,
+                neo_version_range: neo_version_range,
+                minecraft_version_range: forge_minecraft_version_range
+    }
+}
+
+jar {
+    manifest {
+        attributes([
+                "Specification-Title"     : "servercountryflags",
+                "Specification-Vendor"    : "Khajiitos",
+                "Implementation-Title"    : "Server Country Flags",
+                "Implementation-Version"  : mod_version,
+                "Implementation-Vendor"   : "Khajiitos",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}
+
+// withType(JavaCompile) didn't work for some reason
+tasks.named("compileJava").configure {
+    source(project(":Common").sourceSets.main.allSource)
+
+    it.options.encoding = "UTF-8"
+}
+
+tasks.withType(Javadoc).configureEach {
+    source(project(":Common").sourceSets.main.allJava)
+}
+
+// Ideally this project would use Gradle from the root project
+tasks.register('wrapper', Wrapper) {
+    gradleVersion = '8.1.1'
+}
+
+// Register dummy ideaSyncTask so that Gradle doesn't complain
+// but why does it complain here and not in the Fabric project?
+tasks.register('ideaSyncTask', {})

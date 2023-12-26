@@ -1,0 +1,31 @@
+modLoader = "javafml"
+loaderVersion = "${neo_loader_version_range}"
+license = "MIT"
+issueTrackerURL = "https://github.com/Khajiitos/ServerCountryFlags/issues"
+
+[[mixins]]
+config="servercountryflags.mixins.json"
+
+[[mods]]
+modId = "servercountryflags"
+version = "${version}"
+logoFile="icon.png"
+displayName = "Server Country Flags"
+authors = "Khajiitos"
+displayURL="https://github.com/Khajiitos/ServerCountryFlags"
+description = '''Shows the flag of where a server is located.'''
+displayTest = "IGNORE_ALL_VERSION"
+
+[[dependencies.servercountryflags]]
+modId = "neoforge"
+mandatory = true
+versionRange = "${neo_version_range}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.servercountryflags]]
+modId = "minecraft"
+mandatory = true
+versionRange = "${minecraft_version_range}"
+ordering = "NONE"
+side = "BOTH"
