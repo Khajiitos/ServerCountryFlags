@@ -4,11 +4,13 @@
   "package": "me.khajiitos.servercountryflags.common.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
+    "JoinMultiplayerScreenAccessor",
     "JoinMultiplayerScreenMixin",
     "LanguageManagerMixin",
     "OnlineServerEntryMixin",
     "serverbrowser.BrowsedEntryMixin",
-    "serverbrowser.ServerBrowserListMixin"
+    "serverbrowser.ServerBrowserListMixin",
+    "serverbrowser.ServerBrowserScreenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

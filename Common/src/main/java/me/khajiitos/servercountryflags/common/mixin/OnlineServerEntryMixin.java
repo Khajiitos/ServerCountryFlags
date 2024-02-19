@@ -7,28 +7,30 @@ import me.khajiitos.servercountryflags.common.config.Config;
 import me.khajiitos.servercountryflags.common.util.APIResponse;
 import me.khajiitos.servercountryflags.common.util.FlagPosition;
 import me.khajiitos.servercountryflags.common.util.FlagRenderInfo;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@Pseudo
 @Mixin(ServerSelectionList.OnlineServerEntry.class)
 public class OnlineServerEntryMixin {
-
     @Shadow
     @Final
     private ServerData serverData;
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private JoinMultiplayerScreen screen;
 
@@ -40,6 +42,13 @@ public class OnlineServerEntryMixin {
         GuiComponent.fill(poseStack, x + width - 1, y + 1, x + width, y + height - 1, color);
     }
 
+    @Shadow @Final private Minecraft minecraft;
+
+    // Suppressing all warnings - don't know what the exact name is
+    // Minecraft Dev extension complains that it can't find the "render" function,
+    // because the project we are working with here is obfuscated
+    // When compiling on Forge/Fabric, the mod is deobfuscated there, so it works
+    @SuppressWarnings("all")
     @ModifyArg(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;draw(Lcom/mojang/blaze3d/vertex/PoseStack;Ljava/lang/String;FFI)I", ordinal = 0), method = "render", index = 2)
     public float serverNameX(float oldX) {
         if (Config.cfg.flagPosition == FlagPosition.BEHIND_NAME) {
@@ -54,12 +63,31 @@ public class OnlineServerEntryMixin {
         return oldX;
     }
 
+    @SuppressWarnings("all")
     @Inject(at = @At("TAIL"), method = "render")
     public void render(PoseStack poseStack, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta, CallbackInfo info) {
         APIResponse apiResponse = ServerCountryFlags.servers.get(serverData.ip);
         FlagRenderInfo flagRenderInfo = ServerCountryFlags.getFlagRenderInfo(apiResponse);
 
         if (flagRenderInfo == null) {
+            return;
+        }
+
+        if (Config.cfg.flagPosition == FlagPosition.TOOLTIP_SERVER_NAME) {
+            int serverNameStartX = x + 35;
+            int serverNameStartY = y + 1;
+
+            int serverNameWidth = this.minecraft.font.width(this.serverData.name);
+            int serverNameHeight = 8;
+
+            if (mouseX >= serverNameStartX && mouseX <= serverNameStartX + serverNameWidth && mouseY >= serverNameStartY && mouseY <= serverNameStartY + serverNameHeight) {
+                screen.setToolTip(flagRenderInfo.tooltip());
+            }
+
+            // TODO: maybe render the flag in the future
+            // But I'm too lazy to figure out how to do that.
+            return;
+        } else if (Config.cfg.flagPosition == FlagPosition.TOOLTIP_PING) {
             return;
         }
 
@@ -97,8 +125,35 @@ public class OnlineServerEntryMixin {
         }
 
         RenderSystem.disableBlend();
+
         if (mouseX >= startingX && mouseX <= startingX + width && mouseY >= startingY && mouseY <= startingY + height) {
             screen.setToolTip(flagRenderInfo.tooltip());
+        }
+    }
+
+    @SuppressWarnings("all")
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/multiplayer/JoinMultiplayerScreen;setToolTip(Ljava/util/List;)V", ordinal = 0, shift = At.Shift.AFTER), method = "render")
+    public void onSetTooltip(PoseStack poseStack, int $$1, int $$2, int $$3, int $$4, int $$5, int $$6, int $$7, boolean $$8, float $$9, CallbackInfo ci) {
+        if (Config.cfg.flagPosition == FlagPosition.TOOLTIP_PING) {
+            JoinMultiplayerScreenAccessor accessor = (JoinMultiplayerScreenAccessor) screen;
+
+            APIResponse apiResponse = ServerCountryFlags.servers.get(serverData.ip);
+            FlagRenderInfo flagRenderInfo = ServerCountryFlags.getFlagRenderInfo(apiResponse);
+
+            if (flagRenderInfo == null) {
+                return;
+            }
+
+            List<Component> originalTooltip = accessor.getToolTip();
+
+            if (originalTooltip == null) {
+                return;
+            }
+
+            List<Component> newTooltip = new ArrayList<>(originalTooltip);
+            newTooltip.add(Component.literal(" "));
+            newTooltip.addAll(flagRenderInfo.tooltip());
+            screen.setToolTip(newTooltip);
         }
     }
 }

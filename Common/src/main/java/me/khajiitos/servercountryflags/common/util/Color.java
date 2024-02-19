@@ -18,7 +18,6 @@ public class Color {
         return String.format("(%d, %d, %d, %d)", this.r, this.g, this.b, this.a);
     }
 
-    // FIXME: this doesn't work!!
     public static Color fromString(String string) {
         Matcher matcher = SAVE_PATTERN.matcher(string);
 
