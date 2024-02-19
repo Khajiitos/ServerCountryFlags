@@ -4,7 +4,9 @@ public enum FlagPosition {
     BEHIND_NAME("behindName"),
     LEFT("left"),
     RIGHT("right"),
-    DEFAULT("default");
+    BOTTOM_RIGHT("bottomRight"),
+    TOOLTIP_SERVER_NAME("tooltipServerName"),
+    TOOLTIP_PING("tooltipPing");
 
     private final String name;
 

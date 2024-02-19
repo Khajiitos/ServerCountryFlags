@@ -15,11 +15,13 @@
   "servercountryflags.config.header": "Konfiguracja Server Country Flags",
 
   "servercountryflags.config.field.flagPosition.name": "Położenie flagi",
-  "servercountryflags.config.field.flagPosition.description": "Zmienia pozycję flag. Dostępne opcje: default, left, right, behindName",
+  "servercountryflags.config.field.flagPosition.description": "Zmienia pozycję flag. Dostępne opcje: left, right, behindName, bottomRight, tooltipServerName, tooltipPing",
   "servercountryflags.config.field.flagPosition.value.behindName": "Za nazwą",
   "servercountryflags.config.field.flagPosition.value.left": "Lewo",
   "servercountryflags.config.field.flagPosition.value.right": "Prawo",
-  "servercountryflags.config.field.flagPosition.value.default": "Domyślne",
+  "servercountryflags.config.field.flagPosition.value.bottomRight": "Dolne prawo",
+  "servercountryflags.config.field.flagPosition.value.tooltipServerName": "W podpowiedzi (Nazwa serwera)",
+  "servercountryflags.config.field.flagPosition.value.tooltipPing": "W podpowiedzi (Ping)",
 
   "servercountryflags.config.field.flagBorder.name": "Obramowanie",
   "servercountryflags.config.field.flagBorder.description": "Wyświetla obramowanie dookoła flag",
