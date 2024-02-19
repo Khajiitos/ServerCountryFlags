@@ -12,6 +12,6 @@ import java.util.List;
 @Mixin(ServerBrowserScreen.class)
 public interface ServerBrowserScreenAccessor {
 
-    @Accessor
+    @Accessor(remap = false)
     List<Component> getToolTip();
 }
