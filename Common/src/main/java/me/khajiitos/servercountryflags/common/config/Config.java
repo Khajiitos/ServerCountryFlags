@@ -59,7 +59,7 @@ public class Config {
         @ConfigEntry(configCategory = "servercountryflags.config.category.preferences")
         public boolean resolveRedirects = true;
 
-        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences", stringValues = {"default", "left", "right", "behindName"})
+        @ConfigEntry(configCategory = "servercountryflags.config.category.preferences", stringValues = {"left", "right", "behindName", "bottomRight"})
         public FlagPosition flagPosition = FlagPosition.BEHIND_NAME;
 
         @ConfigEntry(configCategory = "servercountryflags.config.category.preferences", requiredMod = "serverbrowser")
