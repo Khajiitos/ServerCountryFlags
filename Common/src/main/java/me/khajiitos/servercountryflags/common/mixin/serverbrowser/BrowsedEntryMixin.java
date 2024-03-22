@@ -153,7 +153,14 @@ public class BrowsedEntryMixin {
                 return;
             }
 
-            List<Component> newTooltip = new ArrayList<>(accessor.getToolTip());
+
+            List<Component> originalTooltip = accessor.getToolTip();
+
+            if (originalTooltip == null) {
+                return;
+            }
+
+            List<Component> newTooltip = new ArrayList<>(originalTooltip);
             newTooltip.add(Component.literal(" "));
             newTooltip.addAll(flagRenderInfo.tooltip());
             screen.setToolTip(newTooltip);

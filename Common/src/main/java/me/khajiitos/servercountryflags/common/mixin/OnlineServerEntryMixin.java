@@ -30,7 +30,7 @@ public class OnlineServerEntryMixin {
     @Final
     private ServerData serverData;
 
-    @Shadow(remap = false)
+    @Shadow
     @Final
     private JoinMultiplayerScreen screen;
 
