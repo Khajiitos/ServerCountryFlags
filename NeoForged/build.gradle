@@ -63,7 +63,7 @@ dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
 
     implementation "me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}"
-    //implementation "curse.maven:server-browser-825617:${server_browser_artifact_id_neoforged}"
+    compileOnly "curse.maven:server-browser-825617:${server_browser_artifact_id_neoforged}"
     implementation project(':Common')
 }
 
