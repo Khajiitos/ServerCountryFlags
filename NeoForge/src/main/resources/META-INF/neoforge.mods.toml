@@ -14,7 +14,7 @@ displayName = "Server Country Flags"
 authors = "Khajiitos"
 displayURL="https://github.com/Khajiitos/ServerCountryFlags"
 description = '''Shows the flag of where a server is located.'''
-updateJSONURL = "https://updates.khajiitos.fun/server-country-flags/updates-neoforge.json"
+updateJSONURL = "https://updates.khajiitos.me/server-country-flags/updates-neoforge.json"
 displayTest = "IGNORE_ALL_VERSION"
 
 [[dependencies.servercountryflags]]

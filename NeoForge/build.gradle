@@ -101,7 +101,7 @@ tasks.withType(Javadoc).configureEach {
 
 // Ideally this project would use Gradle from the root project
 tasks.register('wrapper', Wrapper) {
-    gradleVersion = '8.7'
+    gradleVersion = '8.14.2'
 }
 
 // Register dummy ideaSyncTask so that Gradle doesn't complain

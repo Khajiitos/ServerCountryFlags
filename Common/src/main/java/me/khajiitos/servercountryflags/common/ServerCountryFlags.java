@@ -121,7 +121,7 @@ public class ServerCountryFlags {
 		}
 		try {
 			APITimeoutManager.incrementRequestsSent();
-			URL apiUrl = new URL(apiUrlStr);
+			URL apiUrl = URI.create(apiUrlStr).toURL();
 			HttpURLConnection con = (HttpURLConnection) apiUrl.openConnection();
 			con.setConnectTimeout(3000);
 
