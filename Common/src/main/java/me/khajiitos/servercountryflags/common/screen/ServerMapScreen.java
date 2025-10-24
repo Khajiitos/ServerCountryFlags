@@ -10,9 +10,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.FurnaceScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -92,23 +91,23 @@ public class ServerMapScreen extends Screen {
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+    public boolean mouseReleased(@NotNull MouseButtonEvent event) {
+        if (event.button() == 0) {
             this.movingMap = false;
             this.movingMapLastX = -1.0;
             this.movingMapLastY = -1.0;
         }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(event);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0 && mouseX >= mapStartX && mouseX <= mapStartX + mapWidth && mouseY >= mapStartY && mouseY <= mapStartY + mapHeight) {
+    public boolean mouseClicked(@NotNull MouseButtonEvent event, boolean b) {
+        if (event.button() == 0 && event.x() >= mapStartX && event.x() <= mapStartX + mapWidth && event.y() >= mapStartY && event.y() <= mapStartY + mapHeight) {
             this.movingMap = true;
-            this.movingMapLastX = mouseX;
-            this.movingMapLastY = mouseY;
+            this.movingMapLastX = event.x();
+            this.movingMapLastY = event.y();
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, b);
     }
 
     @Override
